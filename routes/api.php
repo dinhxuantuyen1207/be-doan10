@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\NguoiDungController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::prefix('/user')->group(function () {
+    Route::get('/list',[NguoiDungController::class,'list']);
+    Route::post('/profile',[NguoiDungController::class,'profile']);
+    Route::post('/update',[NguoiDungController::class,'update']);
+    Route::post('/change-password',[NguoiDungController::class,'changePassword']);
+    Route::post('/destroy',[NguoiDungController::class,'destroy']);
+    Route::post('/create',[NguoiDungController::class,'create']);
+});
+

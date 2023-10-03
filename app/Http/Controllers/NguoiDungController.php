@@ -64,4 +64,21 @@ class NguoiDungController extends Controller
         NguoiDung::create($data);
         return response()->json(['status' => true]);
     }
+
+    public function login(Request $request)
+    {
+
+        $mat_khau = $request->mat_khau;
+        $tai_khoan = $request->tai_khoan;
+        $user = NguoiDung::where('tai_khoan',$tai_khoan)->first();
+        if ($user){
+            if(password_verify($mat_khau,$user->mat_khau)){
+                return response()->json(['status' => true]);
+            } else {
+                return response()->json(['status' => false]);
+            }
+        }else {
+            return response()->json(['status' => false]);
+        }
+    }
 }

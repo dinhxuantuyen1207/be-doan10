@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DongSanPhamController;
+use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,9 +29,19 @@ Route::prefix('/user')->group(function () {
     Route::post('/create',[NguoiDungController::class,'create']);
     Route::post('/login',[NguoiDungController::class,'login']);
 });
+
 Route::prefix('/product-types')->group(function () {
     Route::post('/create',[DongSanPhamController::class,'create']);
     Route::post('/destroy',[DongSanPhamController::class,'destroy']);
     Route::post('/edit',[DongSanPhamController::class,'edit']);
+    Route::get('/list',[DongSanPhamController::class,'list']);
+
+});
+
+Route::prefix('/category-types')->group(function () {
+    Route::post('/create',[LoaiSanPhamController::class,'create']);
+    Route::post('/destroy',[LoaiSanPhamController::class,'destroy']);
+    Route::post('/edit',[LoaiSanPhamController::class,'edit']);
+    Route::get('/list',[LoaiSanPhamController::class,'list']);
 });
 

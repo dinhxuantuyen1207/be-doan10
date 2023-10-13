@@ -3,6 +3,7 @@
 use App\Http\Controllers\DongSanPhamController;
 use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
+use App\Http\Controllers\SanPhamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,5 +44,12 @@ Route::prefix('/category-types')->group(function () {
     Route::post('/destroy',[LoaiSanPhamController::class,'destroy']);
     Route::post('/edit',[LoaiSanPhamController::class,'edit']);
     Route::get('/list',[LoaiSanPhamController::class,'list']);
+});
+
+Route::prefix('/product')->group(function () {
+    Route::post('/create',[SanPhamController::class,'create']);
+    Route::post('/destroy',[SanPhamController::class,'destroy']);
+    Route::post('/edit',[SanPhamController::class,'edit']);
+    Route::get('/list',[SanPhamController::class,'list']);
 });
 

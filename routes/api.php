@@ -51,5 +51,6 @@ Route::prefix('/product')->group(function () {
     Route::get('/{id}/edit',[SanPhamController::class,'edit']);
     Route::post('/edit',[SanPhamController::class,'edit']);
     Route::get('/list',[SanPhamController::class,'list']);
+    Route::post('/detail',[SanPhamController::class,'detail']);
 });
 

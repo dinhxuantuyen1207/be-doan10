@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DanhGiaSanPham;
 use App\Models\HinhAnhSanPham;
 use App\Models\LoaiSanPham;
 use App\Models\SanPham;
@@ -72,6 +73,22 @@ class SanPhamController extends Controller
                 }
             $length = sizeof($data);
             return response()->json(['status'=> true , 'data' => $data , 'length' => $length]);
+        }catch (Exception $e){
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function detail(Request $request){
+        try {
+            $id = $request->id;
+            $sanPham = SanPham::find($id);
+            if(isset($sanPham)){
+                $hinhAnh = HinhAnhSanPham::where('id_san_pham',$id)->select('hinh_anh_san_pham')->get();
+                $danhGia = DanhGiaSanPham::where('id_san_pham',$id)->get();
+                return response()->json(['status' => true,'data'=> $sanPham,'image'=>$hinhAnh,'reviews'=>$danhGia]);
+            } else {
+                return response()->json(['status' => false]);
+            }
         }catch (Exception $e){
             return response()->json(['error' => $e->getMessage()]);
         }

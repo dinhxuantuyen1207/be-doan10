@@ -70,8 +70,8 @@ class SanPhamController extends Controller
                     $sanPham->ten_loai_san_pham = $loaiSanPham->ten_loai_san_pham;
                     $data[]= $sanPham;
                 }
-
-            return response()->json(['status'=> true , 'data' => $data]);
+            $length = sizeof($data);
+            return response()->json(['status'=> true , 'data' => $data , 'length' => $length]);
         }catch (Exception $e){
             return response()->json(['error' => $e->getMessage()]);
         }

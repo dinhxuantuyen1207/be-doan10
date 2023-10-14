@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HinhAnhSanPham;
+use App\Models\LoaiSanPham;
 use App\Models\SanPham;
 use Exception;
 use Illuminate\Http\Request;
@@ -44,4 +45,35 @@ class SanPhamController extends Controller
         return response()->json(['error' => $e->getMessage()]);
     }
 }
+    public function edit($id){
+        try {
+            $data = SanPham::find($id);
+            if(isset($data)){
+                $img = HinhAnhSanPham::where('id_san_pham',$id)->get();
+                return response()->json(['status'=> true , 'data'=>$data ,'img'=>$img]);
+            } else {
+                return response()->json(['status'=> false]);
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function list(){
+        try{
+            $data = [];
+            $data_pre = SanPham::select('id', 'ten_san_pham', 'gia', 'khuyen_mai','id_loai_san_pham')
+                ->get();
+
+                foreach ($data_pre as $sanPham) {
+                    $loaiSanPham = LoaiSanPham::find($sanPham->id_loai_san_pham);
+                    $sanPham->ten_loai_san_pham = $loaiSanPham->ten_loai_san_pham;
+                    $data[]= $sanPham;
+                }
+
+            return response()->json(['status'=> true , 'data' => $data]);
+        }catch (Exception $e){
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
 }

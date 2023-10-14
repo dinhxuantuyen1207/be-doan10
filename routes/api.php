@@ -48,7 +48,7 @@ Route::prefix('/category-types')->group(function () {
 
 Route::prefix('/product')->group(function () {
     Route::post('/create',[SanPhamController::class,'create']);
-    Route::post('/destroy',[SanPhamController::class,'destroy']);
+    Route::get('/{id}/edit',[SanPhamController::class,'edit']);
     Route::post('/edit',[SanPhamController::class,'edit']);
     Route::get('/list',[SanPhamController::class,'list']);
 });

@@ -17,4 +17,8 @@ class SanPham extends Model
         'mo_ta',
         'khuyen_mai',
     ];
+    public function loaiSanPham()
+    {
+        return $this->belongsTo(LoaiSanPham::class,'loai_san_phams.id','san_pham.id_loai_san_pham');
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DongSanPhamController;
+use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\SanPhamController;
@@ -50,7 +51,12 @@ Route::prefix('/product')->group(function () {
     Route::post('/create',[SanPhamController::class,'create']);
     Route::get('/{id}/edit',[SanPhamController::class,'edit']);
     Route::post('/edit',[SanPhamController::class,'edit']);
-    Route::get('/list',[SanPhamController::class,'list']);
     Route::post('/detail',[SanPhamController::class,'detail']);
 });
 
+Route::prefix('/cart')->group(function () {
+    Route::post('/add-to-cart',[GioHangController::class,'addToCart']);
+    Route::get('/{id}/edit',[SanPhamController::class,'edit']);
+    Route::get('/list',[SanPhamController::class,'list']);
+    Route::post('/detail',[SanPhamController::class,'detail']);
+});

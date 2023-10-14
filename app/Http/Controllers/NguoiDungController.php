@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\NguoiDung;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -58,11 +59,22 @@ class NguoiDungController extends Controller
 
     public function create(Request $request)
     {
-
-        $data = $request->all();
-        $data['mat_khau'] = bcrypt($data['mat_khau']);
-        NguoiDung::create($data);
-        return response()->json(['status' => true]);
+        try{
+            $check_name = NguoiDung::where('tai_khoan',$request->tai_khoan)->first();
+            if(isset($check_name)){
+                return response()->json(['status' => false,'message' => 'Người Dùng Đã Tồn Tại']);
+            }
+            $check_phone = NguoiDung::where('so_dien_thoai',$request->so_dien_thoai)->first();
+            if(isset($check_phone)){
+                return response()->json(['status' => false,'message' => 'Số Điện Thoại Đã Được Sử Dụng']);
+            }
+            $data = $request->all();
+            $data['mat_khau'] = bcrypt($data['mat_khau']);
+            NguoiDung::create($data);
+            return response()->json(['status' => true]);
+        }catch (Exception $e) {
+            return response()->json(['status' => false]);
+        }
     }
 
     public function login(Request $request)
@@ -73,7 +85,7 @@ class NguoiDungController extends Controller
         $user = NguoiDung::where('tai_khoan',$tai_khoan)->first();
         if ($user){
             if(password_verify($mat_khau,$user->mat_khau)){
-                return response()->json(['status' => true]);
+                return response()->json(['status' => true,'id'=>$user->id,'name'=>$user->ten_nguoi_dung]);
             } else {
                 return response()->json(['status' => false]);
             }

@@ -50,8 +50,9 @@ Route::prefix('/category-types')->group(function () {
 Route::prefix('/product')->group(function () {
     Route::post('/create',[SanPhamController::class,'create']);
     Route::get('/{id}/edit',[SanPhamController::class,'edit']);
-    Route::post('/edit',[SanPhamController::class,'edit']);
+    Route::post('/update',[SanPhamController::class,'update']);
     Route::post('/detail',[SanPhamController::class,'detail']);
+    Route::get('/list',[SanPhamController::class,'list']);
 });
 
 Route::prefix('/cart')->group(function () {

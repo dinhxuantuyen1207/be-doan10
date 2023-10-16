@@ -66,7 +66,7 @@ class SanPhamController extends Controller
         try{
             $data = [];;
             $so_luong = SanPham::count();
-            $data_pre = SanPham::with('loaiSanPham')->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham')->paginate(12);
+            $data_pre = SanPham::with('loaiSanPham')->with('hinhAnh')->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham')->paginate(12);
             // $data_pre = SanPham::select('id', 'ten_san_pham', 'gia', 'khuyen_mai','id_loai_san_pham')
             //     ->paginate(12);
             //     foreach ($data_pre as $sanPham) {

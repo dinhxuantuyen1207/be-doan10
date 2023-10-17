@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('mat_khau');
             $table->string('ten_nguoi_dung');
             $table->string('dia_chi');
-            $table->string('so_dien_thoai')->unique();
+            $table->string('so_dien_thoai');
+            $table->string('email');
             $table->timestamps();
         });
     }

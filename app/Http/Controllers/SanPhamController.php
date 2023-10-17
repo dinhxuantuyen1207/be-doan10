@@ -63,16 +63,16 @@ class SanPhamController extends Controller
         }
     }
 
-    public function list()
-    {
-        try {
-            $data_pre = SanPham::with('loaiSanPham')->with('hinhAnh')->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham')->paginate(12);
+    // public function list()
+    // {
+    //     try {
+    //         $data_pre = SanPham::with('loaiSanPham')->with('hinhAnh')->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham')->paginate(12);
 
-            return response()->json(['status' => true, 'data' => $data_pre]);
-        } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
-        }
-    }
+    //         return response()->json(['status' => true, 'data' => $data_pre]);
+    //     } catch (Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()]);
+    //     }
+    // }
 
     public function listAll(Request $request)
     {
@@ -90,14 +90,14 @@ class SanPhamController extends Controller
             }, 'hinhAnh' => function ($query) {
                 $query->select('id', 'id_san_pham', 'hinh_anh_san_pham');
             }])
-            ->where(function ($query) use ($search) {
-                $query->where('ten_san_pham', 'like', '%' . $search . '%')
-                    ->orWhereHas('loaiSanPham', function ($subquery) use ($search) {
-                        $subquery->where('ten_loai_san_pham', 'like', '%' . $search . '%');
-                    });
-            })
-            ->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham','mo_ta_ngan','mo_ta')
-            ->paginate($pre_page);
+                ->where(function ($query) use ($search) {
+                    $query->where('ten_san_pham', 'like', '%' . $search . '%')
+                        ->orWhereHas('loaiSanPham', function ($subquery) use ($search) {
+                            $subquery->where('ten_loai_san_pham', 'like', '%' . $search . '%');
+                        });
+                })
+                ->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham', 'mo_ta_ngan', 'mo_ta')
+                ->paginate($pre_page);
             return response()->json(['status' => true, 'data' => $data_pre]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
@@ -173,10 +173,10 @@ class SanPhamController extends Controller
         try {
             return DB::transaction(function () use ($request) {
                 $id = $request->id;
-                if(isset($id)){
+                if (isset($id)) {
                     SanPham::find($id)->delete();
-                    $hinhAnh = HinhAnhSanPham::where('id_san_pham',$id)->get();
-                    foreach($hinhAnh as $anh){
+                    $hinhAnh = HinhAnhSanPham::where('id_san_pham', $id)->get();
+                    foreach ($hinhAnh as $anh) {
                         $filename = 'upload/' . $anh->hinh_anh_san_pham;
                         if (file_exists(public_path($filename))) {
                             unlink(public_path($filename));
@@ -194,4 +194,48 @@ class SanPhamController extends Controller
         }
     }
 
+    public function list(Request $request)
+    {
+        try {
+            $listIdLoaiSanPham = [];
+            $giaTien = [];
+            $price = '';
+            if (isset($request->id_category)) {
+                $loaiSanPham = LoaiSanPham::where('id_dong_san_pham', $request->id_category)->select('id')->get();
+                foreach ($loaiSanPham as $item) {
+                    $listIdLoaiSanPham[] = $item->id;
+                }
+            }
+            if (isset($request->gia_tien)) {
+                $giaTien = $request->gia_tien;
+            }
+            if (isset($request->price)) {
+                $price = $request->price;
+            }
+            $data_pre = SanPham::with('loaiSanPham', 'hinhAnh');
+
+            if (isset($request->id_category)) {
+                $data_pre->whereIn('id_loai_san_pham', $listIdLoaiSanPham);
+            }
+            if (!empty($giaTien[0])) {
+                $data_pre->whereRaw('gia - gia*khuyen_mai/100 >= ?', [$giaTien[0]]);
+            }
+
+            if (!empty($giaTien[1]) && $giaTien !=0) {
+                $data_pre->whereRaw('gia - gia*khuyen_mai/100 <= ?', [$giaTien[1]]);
+            }
+
+            $data_pre->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham');
+
+            if (!empty($price)) {
+                $data_pre->orderByRaw('gia - gia*khuyen_mai/100 ' . $price);
+            }
+
+            $data_pre = $data_pre->paginate(12);
+
+            return response()->json(['status' => true, 'data' => $data_pre]);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
 }

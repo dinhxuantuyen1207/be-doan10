@@ -53,9 +53,10 @@ Route::prefix('/product')->group(function () {
     Route::get('/{id}/edit',[SanPhamController::class,'edit']);
     Route::post('/update',[SanPhamController::class,'update']);
     Route::post('/detail',[SanPhamController::class,'detail']);
-    Route::get('/list',[SanPhamController::class,'list']);
+    Route::post('/list',[SanPhamController::class,'list']);
     Route::post('/list-all',[SanPhamController::class,'listAll']);
     Route::post('/destroy',[SanPhamController::class,'destroy']);
+    // Route::post('/filter',[SanPhamController::class,'filter']);
 });
 
 Route::prefix('/cart')->group(function () {

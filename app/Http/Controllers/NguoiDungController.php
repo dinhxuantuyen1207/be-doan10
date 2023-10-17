@@ -34,6 +34,9 @@ class NguoiDungController extends Controller
         if (isset($request->so_dien_thoai) && $request->so_dien_thoai != '') {
             $taikhoan->so_dien_thoai = $request->so_dien_thoai;
         }
+        if (isset($request->gmail) && $request->gmail != '') {
+            $taikhoan->gmail = $request->gmail;
+        }
         $taikhoan->save();
         return response()->json(['status' => true]);
     }
@@ -65,9 +68,6 @@ class NguoiDungController extends Controller
                 return response()->json(['status' => false,'message' => 'Người Dùng Đã Tồn Tại']);
             }
             $check_phone = NguoiDung::where('so_dien_thoai',$request->so_dien_thoai)->first();
-            if(isset($check_phone)){
-                return response()->json(['status' => false,'message' => 'Số Điện Thoại Đã Được Sử Dụng']);
-            }
             $data = $request->all();
             $data['mat_khau'] = bcrypt($data['mat_khau']);
             NguoiDung::create($data);

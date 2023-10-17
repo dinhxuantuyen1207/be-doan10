@@ -66,8 +66,6 @@ class SanPhamController extends Controller
     public function list()
     {
         try {
-            $data = [];;
-            $so_luong = SanPham::count();
             $data_pre = SanPham::with('loaiSanPham')->with('hinhAnh')->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham')->paginate(12);
 
             return response()->json(['status' => true, 'data' => $data_pre]);
@@ -87,16 +85,19 @@ class SanPhamController extends Controller
             if (isset($request->search)) {
                 $search = $request->search;
             }
-            $data_pre = SanPham::with('loaiSanPham')
-                    ->with('hinhAnh')
-                    ->where(function ($query) use ($search) {
-                        $query->where('ten_san_pham', 'like', '%' . $search . '%')
-                            ->orWhereHas('loaiSanPham', function ($subquery) use ($search) {
-                                $subquery->where('ten_loai_san_pham', 'like', '%' . $search . '%');
-                            });
-                    })
-                    ->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham')
-                    ->paginate($pre_page);
+            $data_pre = SanPham::with(['loaiSanPham' => function ($query1) {
+                $query1->select('id', 'id_dong_san_pham', 'ten_loai_san_pham');
+            }, 'hinhAnh' => function ($query) {
+                $query->select('id', 'id_san_pham', 'hinh_anh_san_pham');
+            }])
+            ->where(function ($query) use ($search) {
+                $query->where('ten_san_pham', 'like', '%' . $search . '%')
+                    ->orWhereHas('loaiSanPham', function ($subquery) use ($search) {
+                        $subquery->where('ten_loai_san_pham', 'like', '%' . $search . '%');
+                    });
+            })
+            ->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham','mo_ta_ngan','mo_ta')
+            ->paginate($pre_page);
             return response()->json(['status' => true, 'data' => $data_pre]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
@@ -166,4 +167,31 @@ class SanPhamController extends Controller
             return response()->json(['error' => $e->getMessage()]);
         }
     }
+
+    public function destroy(Request $request)
+    {
+        try {
+            return DB::transaction(function () use ($request) {
+                $id = $request->id;
+                if(isset($id)){
+                    SanPham::find($id)->delete();
+                    $hinhAnh = HinhAnhSanPham::where('id_san_pham',$id)->get();
+                    foreach($hinhAnh as $anh){
+                        $filename = 'upload/' . $anh->hinh_anh_san_pham;
+                        if (file_exists(public_path($filename))) {
+                            unlink(public_path($filename));
+                        }
+                        $anh->delete();
+                    }
+                    return response()->json(['status' => true]);
+                } else {
+                    return response()->json(['status' => false]);
+                }
+            }, 5);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
 }

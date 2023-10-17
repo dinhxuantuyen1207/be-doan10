@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChuDeFAQController;
 use App\Http\Controllers\DongSanPhamController;
 use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\LoaiSanPhamController;
@@ -53,6 +54,7 @@ Route::prefix('/product')->group(function () {
     Route::post('/update',[SanPhamController::class,'update']);
     Route::post('/detail',[SanPhamController::class,'detail']);
     Route::get('/list',[SanPhamController::class,'list']);
+    Route::post('/list-all',[SanPhamController::class,'listAll']);
 });
 
 Route::prefix('/cart')->group(function () {
@@ -60,4 +62,8 @@ Route::prefix('/cart')->group(function () {
     Route::get('/{id}/edit',[SanPhamController::class,'edit']);
     Route::get('/list',[SanPhamController::class,'list']);
     Route::post('/detail',[SanPhamController::class,'detail']);
+});
+
+Route::prefix('/faq')->group(function () {
+    Route::get('/list',[ChuDeFAQController::class,'list']);
 });

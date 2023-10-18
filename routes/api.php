@@ -57,6 +57,7 @@ Route::prefix('/product')->group(function () {
     Route::post('/list-all',[SanPhamController::class,'listAll']);
     Route::post('/destroy',[SanPhamController::class,'destroy']);
     // Route::post('/filter',[SanPhamController::class,'filter']);
+    Route::get('/{id}',[SanPhamController::class,'productDetail']);
 });
 
 Route::prefix('/cart')->group(function () {

@@ -15,4 +15,9 @@ class DanhGiaSanPham extends Model
     'binh_luan_danh_gia',
     'id_nguoi_dung'
     ];
+
+    public function nguoiDanhGia()
+    {
+        return $this->belongsTo(NguoiDung::class, 'id_nguoi_dung');
+    }
 }

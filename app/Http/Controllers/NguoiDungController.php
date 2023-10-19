@@ -15,6 +15,12 @@ class NguoiDungController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function listAll()
+    {
+        $data = NguoiDung::get();
+        return response()->json(['data' => $data]);
+    }
+
     public function profile(Request $request)
     {
         $id = $request->id;

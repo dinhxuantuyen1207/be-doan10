@@ -126,7 +126,8 @@ class SanPhamController extends Controller
     public function productDetail($id)
     {
         try {
-            $sanPham = SanPham::find($id);
+            $sanPham = SanPham::with(['loaiSanPham' => function ($query1) {
+                $query1->select('id','ten_loai_san_pham');}])->find($id);
             $saoDanhGia = 0;
             $soLuot = 0;
             $saoTong = 0;
@@ -134,11 +135,13 @@ class SanPhamController extends Controller
                 $hinhAnh = HinhAnhSanPham::where('id_san_pham', $id)->select('hinh_anh_san_pham')->get();
                 $danhGia = DanhGiaSanPham::where('id_san_pham', $id)->select('id','id_san_pham','sao_danh_gia','binh_luan_danh_gia','id_nguoi_dung')->with(['nguoiDanhGia' => function ($query1) {
                     $query1->select('id','ten_nguoi_dung','so_dien_thoai');}])->get();
-                foreach ($danhGia as $item){
-                    $saoDanhGia = $saoDanhGia + $item->sao_danh_gia;
-                    $soLuot = $soLuot + 1;
+                if($danhGia->count() > 0) {
+                    foreach ($danhGia as $item){
+                        $saoDanhGia = $saoDanhGia + $item->sao_danh_gia;
+                        $soLuot = $soLuot + 1;
+                    }
+                    $saoTong = $saoDanhGia / $soLuot ;
                 }
-                $saoTong = $saoDanhGia / $soLuot ;
                 return response()->json(['status' => true, 'data' => $sanPham, 'image' => $hinhAnh, 'reviews' => $danhGia ,'starRating' => $saoTong]);
             } else {
                 return response()->json(['status' => false]);

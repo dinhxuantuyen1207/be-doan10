@@ -3,6 +3,7 @@
 use App\Http\Controllers\ChuDeFAQController;
 use App\Http\Controllers\DongSanPhamController;
 use App\Http\Controllers\GioHangController;
+use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\SanPhamController;
@@ -25,6 +26,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::prefix('/user')->group(function () {
     Route::get('/list',[NguoiDungController::class,'list']);
+    Route::post('/list-all',[NguoiDungController::class,'listAll']);
     Route::post('/profile',[NguoiDungController::class,'profile']);
     Route::post('/update',[NguoiDungController::class,'update']);
     Route::post('/change-password',[NguoiDungController::class,'changePassword']);
@@ -62,11 +64,14 @@ Route::prefix('/product')->group(function () {
 
 Route::prefix('/cart')->group(function () {
     Route::post('/add-to-cart',[GioHangController::class,'addToCart']);
-    Route::get('/{id}/edit',[SanPhamController::class,'edit']);
-    Route::get('/list',[SanPhamController::class,'list']);
-    Route::post('/detail',[SanPhamController::class,'detail']);
 });
 
 Route::prefix('/faq')->group(function () {
     Route::get('/list',[ChuDeFAQController::class,'list']);
+});
+
+Route::prefix('/hoa-don')->group(function () {
+    Route::get('/hoa-don-list-user/{id}',[HoaDonController::class,'hoaDonListUser']);
+    Route::post('/list-all',[HoaDonController::class,'listAll']);
+    Route::get('/trang-thai/{id}',[HoaDonController::class,'status']);
 });

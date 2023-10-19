@@ -15,10 +15,35 @@ class NguoiDungController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function listAll()
+    public function listAll(Request $request)
     {
-        $data = NguoiDung::get();
-        return response()->json(['data' => $data]);
+        try {
+            $pre_page = 20;
+            $search = '';
+
+            if (isset($request->pre_page)) {
+                $pre_page = $request->pre_page;
+            }
+
+            $data_pre = NguoiDung::select('id', 'ten_nguoi_dung', 'tai_khoan', 'email', 'so_dien_thoai');
+
+            if (isset($request->search)) {
+                $search = $request->search;
+                $data_pre->where(function ($query) use ($search) {
+                    $query->where('ten_nguoi_dung', 'like', '%' . $search . '%')
+                        ->orWhere('tai_khoan', 'like', '%' . $search . '%')
+                        ->orWhere('email', 'like', '%' . $search . '%')
+                        ->orWhere('so_dien_thoai', 'like', '%' . $search . '%');
+                });
+            }
+
+            $data_pre = $data_pre->paginate($pre_page);
+
+            return response()->json(['status' => true, 'data' => $data_pre]);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+
     }
 
     public function profile(Request $request)

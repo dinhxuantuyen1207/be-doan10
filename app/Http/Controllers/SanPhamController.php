@@ -127,22 +127,24 @@ class SanPhamController extends Controller
     {
         try {
             $sanPham = SanPham::with(['loaiSanPham' => function ($query1) {
-                $query1->select('id','ten_loai_san_pham');}])->find($id);
+                $query1->select('id', 'ten_loai_san_pham');
+            }])->find($id);
             $saoDanhGia = 0;
             $soLuot = 0;
             $saoTong = 0;
             if (isset($sanPham)) {
                 $hinhAnh = HinhAnhSanPham::where('id_san_pham', $id)->select('hinh_anh_san_pham')->get();
-                $danhGia = DanhGiaSanPham::where('id_san_pham', $id)->select('id','id_san_pham','sao_danh_gia','binh_luan_danh_gia','id_nguoi_dung')->with(['nguoiDanhGia' => function ($query1) {
-                    $query1->select('id','ten_nguoi_dung','so_dien_thoai');}])->get();
-                if($danhGia->count() > 0) {
-                    foreach ($danhGia as $item){
+                $danhGia = DanhGiaSanPham::where('id_san_pham', $id)->select('id', 'id_san_pham', 'sao_danh_gia', 'binh_luan_danh_gia', 'id_nguoi_dung')->with(['nguoiDanhGia' => function ($query1) {
+                    $query1->select('id', 'ten_nguoi_dung', 'so_dien_thoai');
+                }])->get();
+                if ($danhGia->count() > 0) {
+                    foreach ($danhGia as $item) {
                         $saoDanhGia = $saoDanhGia + $item->sao_danh_gia;
                         $soLuot = $soLuot + 1;
                     }
-                    $saoTong = $saoDanhGia / $soLuot ;
+                    $saoTong = $saoDanhGia / $soLuot;
                 }
-                return response()->json(['status' => true, 'data' => $sanPham, 'image' => $hinhAnh, 'reviews' => $danhGia ,'starRating' => $saoTong]);
+                return response()->json(['status' => true, 'data' => $sanPham, 'image' => $hinhAnh, 'reviews' => $danhGia, 'starRating' => $saoTong]);
             } else {
                 return response()->json(['status' => false]);
             }
@@ -251,7 +253,7 @@ class SanPhamController extends Controller
                 $data_pre->whereRaw('gia - gia*khuyen_mai/100 >= ?', [$giaTien[0]]);
             }
 
-            if (!empty($giaTien[1]) && $giaTien !=0) {
+            if (!empty($giaTien[1]) && $giaTien != 0) {
                 $data_pre->whereRaw('gia - gia*khuyen_mai/100 <= ?', [$giaTien[1]]);
             }
 
@@ -260,6 +262,54 @@ class SanPhamController extends Controller
             if (!empty($price)) {
                 $data_pre->orderByRaw('gia - gia*khuyen_mai/100 ' . $price);
             }
+
+            $data_pre = $data_pre->paginate(12);
+
+            return response()->json(['status' => true, 'data' => $data_pre]);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function search(Request $request)
+    {
+        try {
+            $giaTien = [];
+            $search = '';
+            if (isset($request->gia_tien)) {
+                $giaTien = $request->gia_tien;
+            }
+            if (isset($request->search)) {
+                $search = $request->search;
+            }
+
+            $data_pre = SanPham::with(['loaiSanPham' => function ($query1) {
+                $query1->select('id', 'id_dong_san_pham', 'ten_loai_san_pham')->with(['dongSanPham' => function ($query) {
+                    $query->select('id', 'ten_dong_san_pham');
+                }]);
+            }, 'hinhAnh' => function ($query) {
+                $query->select('id', 'id_san_pham', 'hinh_anh_san_pham');
+            }])
+                ->where(function ($query) use ($search) {
+                    $query->where('ten_san_pham', 'like', '%' . $search . '%')
+                        ->orWhereHas('loaiSanPham', function ($subquery) use ($search) {
+                            $subquery->where('ten_loai_san_pham', 'like', '%' . $search . '%');
+                        })
+                        ->orWhereHas('loaiSanPham.dongSanPham', function ($subquery) use ($search) {
+                            $subquery->where('ten_dong_san_pham', 'like', '%' . $search . '%');
+                        });
+                });
+            if (!empty($giaTien[0])) {
+                $data_pre->whereRaw('gia - gia*khuyen_mai/100 >= ?', [$giaTien[0]]);
+            }
+
+            if (!empty($giaTien[1]) && $giaTien != 0) {
+                $data_pre->whereRaw('gia - gia*khuyen_mai/100 <= ?', [$giaTien[1]]);
+            }
+
+            $data_pre->select('id', 'ten_san_pham', 'gia', 'khuyen_mai', 'id_loai_san_pham');
+
+
 
             $data_pre = $data_pre->paginate(12);
 

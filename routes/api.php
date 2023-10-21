@@ -25,54 +25,54 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::prefix('/user')->group(function () {
-    Route::get('/list',[NguoiDungController::class,'list']);
-    Route::post('/list-all',[NguoiDungController::class,'listAll']);
-    Route::post('/profile',[NguoiDungController::class,'profile']);
-    Route::post('/update',[NguoiDungController::class,'update']);
-    Route::post('/change-password',[NguoiDungController::class,'changePassword']);
-    Route::post('/destroy',[NguoiDungController::class,'destroy']);
-    Route::post('/create',[NguoiDungController::class,'create']);
-    Route::post('/login',[NguoiDungController::class,'login']);
+    Route::get('/list', [NguoiDungController::class, 'list']);
+    Route::post('/list-all', [NguoiDungController::class, 'listAll']);
+    Route::post('/profile', [NguoiDungController::class, 'profile']);
+    Route::post('/update', [NguoiDungController::class, 'update']);
+    Route::post('/change-password', [NguoiDungController::class, 'changePassword']);
+    Route::post('/destroy', [NguoiDungController::class, 'destroy']);
+    Route::post('/create', [NguoiDungController::class, 'create']);
+    Route::post('/login', [NguoiDungController::class, 'login']);
 });
 
 Route::prefix('/product-types')->group(function () {
-    Route::post('/create',[DongSanPhamController::class,'create']);
-    Route::post('/destroy',[DongSanPhamController::class,'destroy']);
-    Route::post('/edit',[DongSanPhamController::class,'edit']);
-    Route::get('/list',[DongSanPhamController::class,'list']);
-
+    Route::post('/create', [DongSanPhamController::class, 'create']);
+    Route::post('/destroy', [DongSanPhamController::class, 'destroy']);
+    Route::post('/edit', [DongSanPhamController::class, 'edit']);
+    Route::get('/list', [DongSanPhamController::class, 'list']);
 });
 
 Route::prefix('/category-types')->group(function () {
-    Route::post('/create',[LoaiSanPhamController::class,'create']);
-    Route::post('/destroy',[LoaiSanPhamController::class,'destroy']);
-    Route::post('/edit',[LoaiSanPhamController::class,'edit']);
-    Route::get('/list',[LoaiSanPhamController::class,'list']);
+    Route::post('/create', [LoaiSanPhamController::class, 'create']);
+    Route::post('/destroy', [LoaiSanPhamController::class, 'destroy']);
+    Route::post('/edit', [LoaiSanPhamController::class, 'edit']);
+    Route::get('/list', [LoaiSanPhamController::class, 'list']);
 });
 
 Route::prefix('/product')->group(function () {
-    Route::post('/create',[SanPhamController::class,'create']);
-    Route::get('/{id}/edit',[SanPhamController::class,'edit']);
-    Route::post('/update',[SanPhamController::class,'update']);
-    Route::post('/detail',[SanPhamController::class,'detail']);
-    Route::post('/list',[SanPhamController::class,'list']);
-    Route::post('/list-all',[SanPhamController::class,'listAll']);
-    Route::post('/destroy',[SanPhamController::class,'destroy']);
+    Route::post('/create', [SanPhamController::class, 'create']);
+    Route::get('/{id}/edit', [SanPhamController::class, 'edit']);
+    Route::post('/update', [SanPhamController::class, 'update']);
+    Route::post('/detail', [SanPhamController::class, 'detail']);
+    Route::post('/list', [SanPhamController::class, 'list']);
+    Route::post('/list-all', [SanPhamController::class, 'listAll']);
+    Route::post('/destroy', [SanPhamController::class, 'destroy']);
     // Route::post('/filter',[SanPhamController::class,'filter']);
-    Route::get('/{id}',[SanPhamController::class,'productDetail']);
+    Route::get('/{id}', [SanPhamController::class, 'productDetail']);
+    Route::post('/search', [SanPhamController::class, 'search']);
 });
 
 Route::prefix('/cart')->group(function () {
-    Route::post('/add-to-cart',[GioHangController::class,'addToCart']);
-    Route::post('/my-cart',[GioHangController::class,'myCart']);
+    Route::post('/add-to-cart', [GioHangController::class, 'addToCart']);
+    Route::post('/my-cart', [GioHangController::class, 'myCart']);
 });
 
 Route::prefix('/faq')->group(function () {
-    Route::get('/list',[ChuDeFAQController::class,'list']);
+    Route::get('/list', [ChuDeFAQController::class, 'list']);
 });
 
 Route::prefix('/hoa-don')->group(function () {
-    Route::get('/hoa-don-list-user/{id}',[HoaDonController::class,'hoaDonListUser']);
-    Route::post('/list-all',[HoaDonController::class,'listAll']);
-    Route::get('/trang-thai/{id}',[HoaDonController::class,'status']);
+    Route::get('/hoa-don-list-user/{id}', [HoaDonController::class, 'hoaDonListUser']);
+    Route::post('/list-all', [HoaDonController::class, 'listAll']);
+    Route::get('/trang-thai/{id}', [HoaDonController::class, 'status']);
 });

@@ -13,4 +13,8 @@ class LoaiSanPham extends Model
         'ten_loai_san_pham',
         'id_dong_san_pham'
     ];
+    public function dongSanPham()
+    {
+        return $this->belongsTo(DongSanPham::class, 'id_dong_san_pham');
+    }
 }

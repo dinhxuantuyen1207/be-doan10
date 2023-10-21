@@ -12,4 +12,9 @@ class GioHang extends Model
     protected $fillable = [
         'id_nguoi_dung'
     ];
+
+    public function chiTietGioHang()
+    {
+        return $this->hasMany(ChiTietGioHang::class, 'id_gio_hang');
+    }
 }

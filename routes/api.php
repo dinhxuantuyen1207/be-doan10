@@ -64,6 +64,7 @@ Route::prefix('/product')->group(function () {
 
 Route::prefix('/cart')->group(function () {
     Route::post('/add-to-cart',[GioHangController::class,'addToCart']);
+    Route::post('/my-cart',[GioHangController::class,'myCart']);
 });
 
 Route::prefix('/faq')->group(function () {

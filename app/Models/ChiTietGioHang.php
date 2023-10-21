@@ -14,4 +14,9 @@ class ChiTietGioHang extends Model
         'id_san_pham',
         'so_luong'
     ];
+
+    public function sanPham()
+    {
+        return $this->belongsTo(SanPham::class, 'id_san_pham');
+    }
 }

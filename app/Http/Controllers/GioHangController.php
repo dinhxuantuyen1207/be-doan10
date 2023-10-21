@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ChiTietGioHang;
 use App\Models\GioHang;
+use App\Models\SanPham;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -39,4 +40,18 @@ class GioHangController extends Controller
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
     }
+
+    public function myCart(Request $request)
+    {
+        try {
+            $id = $request->id;
+            $data = GioHang::where('id_nguoi_dung',$id)->select('id')->with(['chiTietGioHang' => function ($query) { $query->with(["sanPham" => function ($query) {
+                $query->select('id','gia','khuyen_mai','ten_san_pham')->with(['hinhAnh' => function ($query) { $query->select('id_san_pham','hinh_anh_san_pham')->first();}]);
+            } ])->select('id','id_gio_hang','id_san_pham','so_luong'); }])->first();
+            return response()->json(['status' => true, 'data' => $data]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
 }

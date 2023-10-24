@@ -5,6 +5,7 @@ use App\Http\Controllers\ChuDeFAQController;
 use App\Http\Controllers\DongSanPhamController;
 use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HoaDonController;
+use App\Http\Controllers\KhoController;
 use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhanVienController;
@@ -50,6 +51,7 @@ Route::prefix('/category-types')->group(function () {
     Route::post('/destroy', [LoaiSanPhamController::class, 'destroy']);
     Route::post('/edit', [LoaiSanPhamController::class, 'edit']);
     Route::get('/list', [LoaiSanPhamController::class, 'list']);
+    Route::post('/list-id', [LoaiSanPhamController::class, 'listId']);
 });
 
 Route::prefix('/product')->group(function () {
@@ -63,6 +65,7 @@ Route::prefix('/product')->group(function () {
     // Route::post('/filter',[SanPhamController::class,'filter']);
     Route::get('/{id}', [SanPhamController::class, 'productDetail']);
     Route::post('/search', [SanPhamController::class, 'search']);
+    Route::post('/list-id', [SanPhamController::class, 'listId']);
 });
 
 Route::prefix('/cart')->group(function () {
@@ -94,4 +97,8 @@ Route::prefix('/chuc-vu')->group(function () {
     Route::post('quyen-han', [ChucVuController::class, 'listQuyenHan']);
     Route::post('create', [ChucVuController::class, 'create']);
     Route::post('update', [ChucVuController::class, 'update']);
+});
+
+Route::prefix('/kho')->group(function () {
+    Route::post('product', [KhoController::class, 'detailKho']);
 });

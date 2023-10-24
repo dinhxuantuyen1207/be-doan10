@@ -10,7 +10,7 @@ class NhanVien extends Model
     use HasFactory;
     protected $table = 'nhan_viens';
     protected $fillable = [
-       'tai_khoan',
+        'tai_khoan',
         'mat_khau',
         'ten_nhan_vien',
         'so_dien_thoai',
@@ -22,6 +22,6 @@ class NhanVien extends Model
 
     public function chucVu()
     {
-        return $this->belongsTo(chucVu::class, 'id_chuc_vu');
+        return $this->belongsTo(ChucVu::class, 'id_chuc_vu');
     }
 }

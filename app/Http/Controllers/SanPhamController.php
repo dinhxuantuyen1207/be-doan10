@@ -76,6 +76,16 @@ class SanPhamController extends Controller
     //     }
     // }
 
+    public function listId(Request $request)
+    {
+        if (isset($request->id)) {
+            $data = SanPham::where('id_loai_san_pham', $request->id)->select('id', 'ten_san_pham')->get();
+            return response()->json(['status' => true, 'data' => $data]);
+        } else {
+            return response()->json(['status' => false]);
+        }
+    }
+
     public function listAll(Request $request)
     {
         try {

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('ten_nhan_vien');
             $table->string('so_dien_thoai')->nullable();
             $table->bigInteger('id_chuc_vu')->length(20)->nullable();
+            $table->decimal('luong_co_ban', 10, 2)->nullable();
             $table->string('anh_nhan_vien')->nullable();
             $table->json('anh_cccd')->nullable();
             $table->timestamps();

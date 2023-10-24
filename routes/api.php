@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\ChucVuController;
 use App\Http\Controllers\ChuDeFAQController;
 use App\Http\Controllers\DongSanPhamController;
 use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
+use App\Http\Controllers\NhanVienController;
+use App\Http\Controllers\QuyenHanController;
 use App\Http\Controllers\SanPhamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -75,4 +78,20 @@ Route::prefix('/hoa-don')->group(function () {
     Route::get('/hoa-don-list-user/{id}', [HoaDonController::class, 'hoaDonListUser']);
     Route::post('/list-all', [HoaDonController::class, 'listAll']);
     Route::get('/trang-thai/{id}', [HoaDonController::class, 'status']);
+});
+
+Route::prefix('/nhan-vien')->group(function () {
+    Route::post('list', [NhanVienController::class, 'list']);
+    Route::post('create', [NhanVienController::class, 'create']);
+});
+
+Route::prefix('/quyen-han')->group(function () {
+    Route::get('list', [QuyenHanController::class, 'list']);
+});
+
+Route::prefix('/chuc-vu')->group(function () {
+    Route::get('list', [ChucVuController::class, 'list']);
+    Route::post('quyen-han', [ChucVuController::class, 'listQuyenHan']);
+    Route::post('create', [ChucVuController::class, 'create']);
+    Route::post('update', [ChucVuController::class, 'update']);
 });

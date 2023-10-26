@@ -21,8 +21,8 @@ class GioHangController extends Controller
             $gio_hang = GioHang::where('id_nguoi_dung', $id)->get()->count();
             $gio_hang_get = GioHang::where('id_nguoi_dung', $id)->first();
             if ($gio_hang > 0) {
-                $check_gio_hang = ChiTietGioHang::where('id_gio_hang',$gio_hang_get->id)->where('id_san_pham',$request->id_san_pham)->get()->count();
-                if($check_gio_hang > 0){
+                $check_gio_hang = ChiTietGioHang::where('id_gio_hang', $gio_hang_get->id)->where('id_san_pham', $request->id_san_pham)->get()->count();
+                if ($check_gio_hang > 0) {
                     return response()->json(['status' => true, 'message' => 'Sản Phẩm Đã Có Trong Giỏ Hàng']);
                 } else {
                     ChiTietGioHang::create(['id_gio_hang' => $gio_hang_get->id, 'id_san_pham' => $request->id_san_pham, 'so_luong' => 1]);
@@ -45,13 +45,38 @@ class GioHangController extends Controller
     {
         try {
             $id = $request->id;
-            $data = GioHang::where('id_nguoi_dung',$id)->select('id')->with(['chiTietGioHang' => function ($query) { $query->with(["sanPham" => function ($query) {
-                $query->select('id','gia','khuyen_mai','ten_san_pham')->with(['hinhAnh' => function ($query) { $query->select('id_san_pham','hinh_anh_san_pham')->first();}]);
-            } ])->select('id','id_gio_hang','id_san_pham','so_luong'); }])->first();
+            $data = GioHang::where('id_nguoi_dung', $id)->select('id')->with(['chiTietGioHang' => function ($query) {
+                $query->with(["sanPham" => function ($query) {
+                    $query->select('id', 'gia', 'khuyen_mai', 'ten_san_pham')->with(['hinhAnh' => function ($query) {
+                        $query->select('id_san_pham', 'hinh_anh_san_pham')->first();
+                    }]);
+                }])->select('id', 'id_gio_hang', 'id_san_pham', 'so_luong');
+            }])->first();
             return response()->json(['status' => true, 'data' => $data]);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
     }
 
+    public function getPaymentAmount(Request $request)
+    {
+        try {
+            $id = $request->id;
+            $amount = 0;
+            $data = GioHang::where('id_nguoi_dung', $id)->with(['chiTietGioHang' => function ($query) {
+                $query->with('sanPham');
+            }])->first();
+            if (isset($data)) {
+                if (isset($data->chiTietGioHang)) {
+                    foreach ($data->chiTietGioHang as $item) {
+                        $amount = $amount + ($item->so_luong * ($item->sanPham->gia - $item->sanPham->gia * ($item->sanPham->khuyen_mai / 100)));
+                    }
+                }
+                return response()->json(['status' => true, 'amount' => $amount]);
+            }
+            return response()->json(['status' => false]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
 }

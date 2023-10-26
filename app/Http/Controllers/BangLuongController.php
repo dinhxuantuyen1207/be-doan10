@@ -3,63 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\BangLuong;
+use Exception;
 use Illuminate\Http\Request;
 
 class BangLuongController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function selectLuong(Request $request)
     {
-        //
-    }
+        try {
+            $id_nv = '';
+            $month = '';
+            $data_pre = BangLuong::with(['nhanVien' => function ($query1) {
+                $query1->select('id', 'ten_nhan_vien', 'luong_co_ban');
+            }])
+                ->select('id', 'id_nhan_vien', 'thang_nam', 'cham_cong', 'he_so', 'thuong');
+            if (isset($request->id)) {
+                $id_nv = $request->id;
+                $data_pre->where('id_nhan_vien', $id_nv);
+            }
+            if (isset($request->month)) {
+                $month = $request->month;
+                $data_pre->where('thang_nam', $month);
+            }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+            $data = $data_pre->get();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(BangLuong $bangLuong)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BangLuong $bangLuong)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, BangLuong $bangLuong)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(BangLuong $bangLuong)
-    {
-        //
+            return response()->json(['status' => true, 'data' => $data]);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
     }
 }

@@ -16,4 +16,9 @@ class BangLuong extends Model
         'he_so',
         'thuong',
     ];
+
+    public function nhanVien()
+    {
+        return $this->belongsTo(NhanVien::class, 'id_nhan_vien');
+    }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\BangLuongController;
+use App\Http\Controllers\ChiTietGioHangController;
 use App\Http\Controllers\ChucVuController;
 use App\Http\Controllers\ChuDeFAQController;
 use App\Http\Controllers\DongSanPhamController;
@@ -71,6 +73,8 @@ Route::prefix('/product')->group(function () {
 Route::prefix('/cart')->group(function () {
     Route::post('/add-to-cart', [GioHangController::class, 'addToCart']);
     Route::post('/my-cart', [GioHangController::class, 'myCart']);
+    Route::post('/change-cart', [ChiTietGioHangController::class, 'changeCart']);
+    Route::post('/get-payment-amount', [GioHangController::class, 'getPaymentAmount']);
 });
 
 Route::prefix('/faq')->group(function () {
@@ -86,6 +90,7 @@ Route::prefix('/hoa-don')->group(function () {
 Route::prefix('/nhan-vien')->group(function () {
     Route::post('list', [NhanVienController::class, 'list']);
     Route::post('create', [NhanVienController::class, 'create']);
+    Route::get('list-name', [NhanVienController::class, 'listName']);
 });
 
 Route::prefix('/quyen-han')->group(function () {
@@ -101,4 +106,8 @@ Route::prefix('/chuc-vu')->group(function () {
 
 Route::prefix('/kho')->group(function () {
     Route::post('product', [KhoController::class, 'detailKho']);
+});
+
+Route::prefix('/luong')->group(function () {
+    Route::post('select', [BangLuongController::class, 'selectLuong']);
 });

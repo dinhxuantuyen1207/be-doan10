@@ -43,13 +43,12 @@ class NguoiDungController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
         }
-
     }
 
     public function profile(Request $request)
     {
         $id = $request->id;
-        $data = NguoiDung::find($id);
+        $data = NguoiDung::select('id', 'tai_khoan', 'ten_nguoi_dung', 'dia_chi', 'so_dien_thoai', 'email')->find($id);
         return response()->json(['data' => $data]);
     }
 
@@ -93,17 +92,17 @@ class NguoiDungController extends Controller
 
     public function create(Request $request)
     {
-        try{
-            $check_name = NguoiDung::where('tai_khoan',$request->tai_khoan)->first();
-            if(isset($check_name)){
-                return response()->json(['status' => false,'message' => 'Người Dùng Đã Tồn Tại']);
+        try {
+            $check_name = NguoiDung::where('tai_khoan', $request->tai_khoan)->first();
+            if (isset($check_name)) {
+                return response()->json(['status' => false, 'message' => 'Người Dùng Đã Tồn Tại']);
             }
-            $check_phone = NguoiDung::where('so_dien_thoai',$request->so_dien_thoai)->first();
+            $check_phone = NguoiDung::where('so_dien_thoai', $request->so_dien_thoai)->first();
             $data = $request->all();
             $data['mat_khau'] = bcrypt($data['mat_khau']);
             NguoiDung::create($data);
             return response()->json(['status' => true]);
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['status' => false]);
         }
     }
@@ -113,14 +112,14 @@ class NguoiDungController extends Controller
 
         $mat_khau = $request->mat_khau;
         $tai_khoan = $request->tai_khoan;
-        $user = NguoiDung::where('tai_khoan',$tai_khoan)->first();
-        if ($user){
-            if(password_verify($mat_khau,$user->mat_khau)){
-                return response()->json(['status' => true,'id'=>$user->id,'name'=>$user->ten_nguoi_dung]);
+        $user = NguoiDung::where('tai_khoan', $tai_khoan)->first();
+        if ($user) {
+            if (password_verify($mat_khau, $user->mat_khau)) {
+                return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nguoi_dung]);
             } else {
                 return response()->json(['status' => false]);
             }
-        }else {
+        } else {
             return response()->json(['status' => false]);
         }
     }

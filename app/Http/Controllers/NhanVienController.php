@@ -80,4 +80,10 @@ class NhanVienController extends Controller
             return response()->json(['error' => $e->getMessage()]);
         }
     }
+
+    public function listName()
+    {
+        $data = NhanVien::select('id', 'ten_nhan_vien')->get();
+        return response()->json(['status' => true, "data" => $data]);
+    }
 }

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('dia_chi');
             $table->string('so_dien_thoai');
             $table->string('email');
+            $table->string('anh_dai_dien')->nullable();
             $table->timestamps();
         });
     }

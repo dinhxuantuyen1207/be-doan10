@@ -48,7 +48,7 @@ class NguoiDungController extends Controller
     public function profile(Request $request)
     {
         $id = $request->id;
-        $data = NguoiDung::select('id', 'tai_khoan', 'ten_nguoi_dung', 'dia_chi', 'so_dien_thoai', 'email')->find($id);
+        $data = NguoiDung::select('id', 'tai_khoan', 'ten_nguoi_dung', 'dia_chi', 'so_dien_thoai', 'email', 'anh_dai_dien')->find($id);
         return response()->json(['data' => $data]);
     }
 

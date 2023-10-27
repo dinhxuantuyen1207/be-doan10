@@ -7,6 +7,7 @@ use App\Models\GioHang;
 use App\Models\SanPham;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class GioHangController extends Controller
 {
@@ -72,11 +73,42 @@ class GioHangController extends Controller
                         $amount = $amount + ($item->so_luong * ($item->sanPham->gia - $item->sanPham->gia * ($item->sanPham->khuyen_mai / 100)));
                     }
                 }
+                $amount = $amount + $amount * 0.1 + 10;
+                $amount = round($amount, 2);
                 return response()->json(['status' => true, 'amount' => $amount]);
             }
             return response()->json(['status' => false]);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    public function createQRCodeZalo(Request $request)
+    {
+        $app_id = 1;
+        $key1 = '8NdU5pG5R2spGHGhyO99HN1OhD8IQJBn';
+        $key2 = 'uUfsWgfLkRLzq6W2uNXTCxrfxs51auny';
+
+        // Tạo dữ liệu yêu cầu thanh toán
+        $data = [
+            'app_id' => $app_id,
+            'app_trans_id' => uniqid(), // Mã giao dịch duy nhất
+            'app_time' => time(),
+            'app_user' => 'user123',
+            'amount' => 10000, // Số tiền thanh toán
+            'description' => 'Thanh toán đơn hàng',
+        ];
+
+        ksort($data);
+        $signature = hash('sha256', implode('', $data) . $key2);
+
+        $data['mac'] = $signature;
+
+        $response = Http::post('https://sandbox.zalopay.com.vn/v001/tpe/createorder', $data);
+
+        // Xác minh chữ ký của ZaloPay
+
+        // Trả về QR code và thông tin thanh toán
+        return $response->json();
     }
 }

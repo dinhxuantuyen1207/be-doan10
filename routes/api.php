@@ -75,6 +75,7 @@ Route::prefix('/cart')->group(function () {
     Route::post('/my-cart', [GioHangController::class, 'myCart']);
     Route::post('/change-cart', [ChiTietGioHangController::class, 'changeCart']);
     Route::post('/get-payment-amount', [GioHangController::class, 'getPaymentAmount']);
+    Route::post('/create-qr-code-zalo', [GioHangController::class, 'createQRCodeZalo']);
 });
 
 Route::prefix('/faq')->group(function () {

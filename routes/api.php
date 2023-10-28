@@ -5,6 +5,7 @@ use App\Http\Controllers\ChiTietGioHangController;
 use App\Http\Controllers\ChucVuController;
 use App\Http\Controllers\ChuDeFAQController;
 use App\Http\Controllers\DongSanPhamController;
+use App\Http\Controllers\FAQController;
 use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\KhoController;
@@ -80,6 +81,16 @@ Route::prefix('/cart')->group(function () {
 
 Route::prefix('/faq')->group(function () {
     Route::get('/list', [ChuDeFAQController::class, 'list']);
+    Route::post('/list-faq', [FAQController::class, 'listFAQ']);
+    Route::post('/create', [FAQController::class, 'create']);
+    Route::post('/update', [FAQController::class, 'update']);
+    Route::post('/destroy', [FAQController::class, 'destroy']);
+});
+
+Route::prefix('/chu-de-faq')->group(function () {
+    Route::get('/list', [ChuDeFAQController::class, 'listTitle']);
+    Route::post('/create', [ChuDeFAQController::class, 'create']);
+    Route::post('/destroy', [ChuDeFAQController::class, 'destroy']);
 });
 
 Route::prefix('/hoa-don')->group(function () {

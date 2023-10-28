@@ -49,45 +49,71 @@ class NguoiDungController extends Controller
     {
         $id = $request->id;
         $data = NguoiDung::select('id', 'tai_khoan', 'ten_nguoi_dung', 'dia_chi', 'so_dien_thoai', 'email', 'anh_dai_dien')->find($id);
-        return response()->json(['data' => $data]);
+        if (isset($data)) {
+            return response()->json(['status' => true, 'data' => $data]);
+        }
+        return response()->json(['status' => false]);
     }
 
-    public function update(Request $request,)
+    public function update(Request $request)
     {
-        $taikhoan = NguoiDung::find($request->id);
-        if (isset($request->ten_nguoi_dung) && $request->ten_nguoi_dung != '') {
-            $taikhoan->ten_nguoi_dung = $request->ten_nguoi_dung;
+        try {
+            $taikhoan = NguoiDung::find($request->id);
+            if (isset($taikhoan)) {
+                if (isset($request->ten_nguoi_dung) && $request->ten_nguoi_dung != '') {
+                    $taikhoan->ten_nguoi_dung = $request->ten_nguoi_dung;
+                }
+                if (isset($request->dia_chi) && $request->dia_chi != '') {
+                    $taikhoan->dia_chi = $request->dia_chi;
+                }
+                if (isset($request->so_dien_thoai) && $request->so_dien_thoai != '') {
+                    $taikhoan->so_dien_thoai = $request->so_dien_thoai;
+                }
+                if (isset($request->email) && $request->email != '') {
+                    $taikhoan->email = $request->email;
+                }
+                if (isset($request->anh_dai_dien) && $request->anh_dai_dien != '') {
+                    $file = $request->anh_dai_dien;
+                    $name = time() . rand(1, 100) . "." . $file->getClientOriginalExtension();
+                    $file->move('upload', $name);
+                    $taikhoan->anh_dai_dien = $name;
+                }
+                $taikhoan->save();
+                return response()->json(['status' => true]);
+            } else {
+                return response()->json(['status' => false]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false]);
         }
-        if (isset($request->dia_chi) && $request->dia_chi != '') {
-            $taikhoan->dia_chi = $request->dia_chi;
-        }
-        if (isset($request->so_dien_thoai) && $request->so_dien_thoai != '') {
-            $taikhoan->so_dien_thoai = $request->so_dien_thoai;
-        }
-        if (isset($request->gmail) && $request->gmail != '') {
-            $taikhoan->gmail = $request->gmail;
-        }
-        $taikhoan->save();
-        return response()->json(['status' => true]);
     }
 
     public function changePassword(Request $request)
     {
-        $taikhoan = NguoiDung::find($request->id);
-        $taikhoan->mat_khau = $request->mat_khau;
-        $taikhoan['mat_khau'] = bcrypt($taikhoan['mat_khau']);
-        $taikhoan->save();
-        return response()->json(['status' => true]);
+        try {
+            $taikhoan = NguoiDung::find($request->id);
+            $taikhoan->mat_khau = $request->mat_khau;
+            $taikhoan['mat_khau'] = bcrypt($taikhoan['mat_khau']);
+            $taikhoan->save();
+            return response()->json(['status' => true]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false]);
+        }
     }
 
     public function destroy(Request $request)
     {
-        $taikhoan = NguoiDung::find($request->id);
-        if ($taikhoan) {
-            $taikhoan->delete();
-            return response()->json(['status' => true]);
+        try {
+            $taikhoan = NguoiDung::find($request->id);
+            if ($taikhoan) {
+                $taikhoan->delete();
+                return response()->json(['status' => true]);
+            }
+            return response()->json(['status' => false]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false]);
         }
-        return response()->json(['status' => false]);
     }
 
     public function create(Request $request)
@@ -103,13 +129,13 @@ class NguoiDungController extends Controller
             NguoiDung::create($data);
             return response()->json(['status' => true]);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['status' => false]);
         }
     }
 
     public function login(Request $request)
     {
-
         $mat_khau = $request->mat_khau;
         $tai_khoan = $request->tai_khoan;
         $user = NguoiDung::where('tai_khoan', $tai_khoan)->first();

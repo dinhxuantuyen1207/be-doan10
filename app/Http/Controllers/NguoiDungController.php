@@ -60,19 +60,19 @@ class NguoiDungController extends Controller
         try {
             $taikhoan = NguoiDung::find($request->id);
             if (isset($taikhoan)) {
-                if (isset($request->ten_nguoi_dung) && $request->ten_nguoi_dung != '') {
+                if (!empty($request->ten_nguoi_dung)) {
                     $taikhoan->ten_nguoi_dung = $request->ten_nguoi_dung;
                 }
-                if (isset($request->dia_chi) && $request->dia_chi != '') {
+                if (!empty($request->dia_chi)) {
                     $taikhoan->dia_chi = $request->dia_chi;
                 }
-                if (isset($request->so_dien_thoai) && $request->so_dien_thoai != '') {
+                if (!empty($request->so_dien_thoai)) {
                     $taikhoan->so_dien_thoai = $request->so_dien_thoai;
                 }
-                if (isset($request->email) && $request->email != '') {
+                if (!empty($request->email)) {
                     $taikhoan->email = $request->email;
                 }
-                if (isset($request->anh_dai_dien) && $request->anh_dai_dien != '') {
+                if (!empty($request->anh_dai_dien) && $request->anh_dai_dien != "\"\"") {
                     $file = $request->anh_dai_dien;
                     $name = time() . rand(1, 100) . "." . $file->getClientOriginalExtension();
                     $file->move('upload', $name);
@@ -84,10 +84,10 @@ class NguoiDungController extends Controller
                 return response()->json(['status' => false]);
             }
         } catch (Exception $e) {
-            DB::rollBack();
             return response()->json(['status' => false]);
         }
     }
+
 
     public function changePassword(Request $request)
     {

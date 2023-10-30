@@ -123,3 +123,7 @@ Route::prefix('/kho')->group(function () {
 Route::prefix('/luong')->group(function () {
     Route::post('select', [BangLuongController::class, 'selectLuong']);
 });
+
+Route::prefix('/hoa-don')->group(function () {
+    Route::post('create', [HoaDonController::class, 'create']);
+});

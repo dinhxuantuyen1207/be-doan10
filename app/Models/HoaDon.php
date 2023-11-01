@@ -13,6 +13,8 @@ class HoaDon extends Model
         'id_nguoi_dung',
         'ngay_mua',
         'gia_tien_thanh_toan',
+        'tax',
+        'ship',
         'trang_thai_thanh_toan',
         'ngay_thanh_toan',
         'id_trang_thai'
@@ -29,5 +31,13 @@ class HoaDon extends Model
     public function trangThaiHoaDon()
     {
         return $this->hasMany(TrangThaiHoaDon::class, 'id_hoa_don');
+    }
+    public function thongTinNguoiNhan()
+    {
+        return $this->belongsTo(ThongTinNguoiNhan::class, 'id', 'id_hoa_don');
+    }
+    public function chiTietHoaDon()
+    {
+        return $this->hasMany(ChiTietHoaDon::class, 'id_hoa_don');
     }
 }

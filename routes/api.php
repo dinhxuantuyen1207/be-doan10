@@ -126,4 +126,6 @@ Route::prefix('/luong')->group(function () {
 
 Route::prefix('/hoa-don')->group(function () {
     Route::post('create', [HoaDonController::class, 'create']);
+    Route::post('xac-thuc', [HoaDonController::class, 'xacThuc']);
+    Route::get('get/{id}', [HoaDonController::class, 'getHoaDon']);
 });

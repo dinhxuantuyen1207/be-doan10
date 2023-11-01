@@ -24,19 +24,19 @@ class GioHangController extends Controller
             if ($gio_hang > 0) {
                 $check_gio_hang = ChiTietGioHang::where('id_gio_hang', $gio_hang_get->id)->where('id_san_pham', $request->id_san_pham)->get()->count();
                 if ($check_gio_hang > 0) {
-                    return response()->json(['status' => true, 'message' => 'Sản Phẩm Đã Có Trong Giỏ Hàng']);
+                    return response()->json(['status' => true, 'message' => 'Added to Cart']);
                 } else {
-                    ChiTietGioHang::create(['id_gio_hang' => $gio_hang_get->id, 'id_san_pham' => $request->id_san_pham, 'so_luong' => 1]);
-                    return response()->json(['status' => true, 'message' => 'Đã Thêm Vào Giỏ Hàng']);
+                    ChiTietGioHang::create(['id_gio_hang' => $gio_hang_get->id, 'id_san_pham' => $request->id_san_pham, 'so_luong' => $request->so_luong]);
+                    return response()->json(['status' => true, 'message' => 'Added to Cart']);
                 }
             }
             $new_gio_hang = GioHang::create(['id_nguoi_dung' => $id]);
             if (!$new_gio_hang) {
                 return response()->json(['status' => false, 'message' => 'Failed to create cart']);
             }
-            ChiTietGioHang::create(['id_gio_hang' => $new_gio_hang->id, 'id_san_pham' => $request->id_san_pham, 'so_luong' => 1]);
+            ChiTietGioHang::create(['id_gio_hang' => $new_gio_hang->id, 'id_san_pham' => $request->id_san_pham, 'so_luong' => $request->so_luong]);
 
-            return response()->json(['status' => true, 'message' => 'Đã Thêm Vào Giỏ Hàng']);
+            return response()->json(['status' => true, 'message' => 'Added to Cart']);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
@@ -64,6 +64,8 @@ class GioHangController extends Controller
         try {
             $id = $request->id;
             $amount = 0;
+            $tax = 0;
+            $ship = 10;
             $data = GioHang::where('id_nguoi_dung', $id)->with(['chiTietGioHang' => function ($query) {
                 $query->with('sanPham');
             }])->first();
@@ -73,9 +75,10 @@ class GioHangController extends Controller
                         $amount = $amount + ($item->so_luong * ($item->sanPham->gia - $item->sanPham->gia * ($item->sanPham->khuyen_mai / 100)));
                     }
                 }
-                $amount = $amount + $amount * 0.1 + 10;
+                $tax = $amount * 0.1;
+                $amount = $amount + $tax + $ship;
                 $amount = round($amount, 2);
-                return response()->json(['status' => true, 'amount' => $amount]);
+                return response()->json(['status' => true, 'amount' => $amount, 'tax' => $tax, 'ship' => $ship]);
             }
             return response()->json(['status' => false]);
         } catch (Exception $e) {

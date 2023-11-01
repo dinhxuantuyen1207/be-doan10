@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChiTietGioHang;
 use App\Models\ChiTietHoaDon;
 use App\Models\GioHang;
 use App\Models\HoaDon;
+use App\Models\SanPham;
+use App\Models\ThongTinNguoiNhan;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -80,11 +83,21 @@ class HoaDonController extends Controller
     {
         try {
             if (!isset($request->id)) {
-                return response()->json(["status" => false, "message" => "Missing 'id' in request"]);
+                return response()->json(["status" => false, "message" => "Yêu Cầu Đăng Nhập"]);
             }
             if (!isset($request->amount)) {
-                return response()->json(["status" => false, "message" => "Missing 'amount' in request"]);
+                return response()->json(["status" => false, "message" => "Không Có Sản Phẩm Để Thanh Toán"]);
             }
+            if (!isset($request->tax)) {
+                return response()->json(["status" => false, "message" => "Thiếu Thông Tin"]);
+            }
+            if (!isset($request->ship)) {
+                return response()->json(["status" => false, "message" => "Thiếu Thông Tin"]);
+            }
+            if (!isset($request->name) || !isset($request->phone) || !isset($request->address)) {
+                return response()->json(["status" => false, "message" => "Yêu Cầu Nhập Thông Tin Người Nhận"]);
+            }
+
 
             DB::beginTransaction();
 
@@ -95,7 +108,7 @@ class HoaDonController extends Controller
                 return response()->json(["status" => false, "message" => "Shopping cart not found"]);
             }
 
-            $chiTietGioHang = ChiTietHoaDon::where('id_gio_hang', $gioHang->id)->get();
+            $chiTietGioHang = ChiTietGioHang::where('id_gio_hang', $gioHang->id)->get();
 
             if ($chiTietGioHang->isEmpty()) {
                 DB::rollBack();
@@ -109,7 +122,10 @@ class HoaDonController extends Controller
                 'id_nguoi_dung' => $request->id,
                 'ngay_mua' => $date,
                 'gia_tien_thanh_toan' => $request->amount,
-                'id_trang_thai' => 1
+                'id_trang_thai' => 1,
+                'tax' => $request->tax,
+                'ship' => $request->ship,
+                'trang_thai_thanh_toan' => 'Chưa Thanh Toán'
             ]);
 
             if (isset($request->status) && $request->status == true) {
@@ -119,22 +135,70 @@ class HoaDonController extends Controller
             }
 
             foreach ($chiTietGioHang as $chiTiet) {
-                ChiTietHoaDon::create([
-                    'id_hoa_don' => $hoaDon->id,
-                    'id_san_pham' => $chiTiet->id_san_pham,
-                    'so_luong' => $chiTiet->so_luong
-                ]);
-                $chiTiet->delete();
-            }
+                $sanPham = SanPham::find($chiTiet->id_san_pham);
+                if ($sanPham) {
+                    $newChiTiet = ChiTietHoaDon::create([
+                        'id_hoa_don' => $hoaDon->id,
+                        'id_san_pham' => $chiTiet->id_san_pham,
+                        'gia_tien' => $sanPham->gia,
+                        'so_luong' => $chiTiet->so_luong,
+                    ]);
 
+                    if ($newChiTiet) {
+                        $chiTiet->delete();
+                    }
+                }
+            }
+            ThongTinNguoiNhan::create(['id_hoa_don' => $hoaDon->id, 'ten_nguoi_nhan' => $request->name, 'so_dien_thoai' => $request->phone, 'dia_chi' => $request->address]);
             $gioHang->delete();
 
             DB::commit();
 
-            return response()->json(["status" => true]);
+            return response()->json(["status" => true, 'invoiceID' => $hoaDon->id]);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    public function xacThuc(Request $request)
+    {
+        try {
+            if (!isset($request->id)) {
+                return response()->json(["status" => false, "message" => "Yêu Cầu Đăng Nhập"]);
+            }
+
+            DB::beginTransaction();
+
+            $hoaDon = HoaDon::find($request->id);
+
+            if (isset($request->status) && $request->status == true) {
+                $today = Carbon::today();
+                $date = $today->format('Y-m-d');
+                $hoaDon->trang_thai_thanh_toan = "Đã Thanh Toán";
+                $hoaDon->ngay_thanh_toan = $date;
+                $hoaDon->save();
+
+                DB::commit();
+
+                return response()->json(['status' => true, 'message' => 'Đã cập nhật trạng thái thanh toán']);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function getHoaDon($id)
+    {
+        if (isset($id)) {
+            $hoaDon = HoaDon::with(["ThongTinNguoiNhan", "chiTietHoaDon" => function ($query) {
+                $query->with(['sanPham' => function ($query1) {
+                    $query1->select('id', 'ten_san_pham');
+                }]);
+            }])->find($id);
+            return response()->json(['status' => true, 'data' => $hoaDon]);
+        }
+        return response()->json(['status' => false]);
     }
 }

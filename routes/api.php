@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BangLuongController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChiTietGioHangController;
 use App\Http\Controllers\ChucVuController;
 use App\Http\Controllers\ChuDeFAQController;
@@ -40,6 +41,7 @@ Route::prefix('/user')->group(function () {
     Route::post('/destroy', [NguoiDungController::class, 'destroy']);
     Route::post('/create', [NguoiDungController::class, 'create']);
     Route::post('/login', [NguoiDungController::class, 'login']);
+    Route::get('/name', [NguoiDungController::class, 'name']);
 });
 
 Route::prefix('/product-types')->group(function () {
@@ -77,6 +79,7 @@ Route::prefix('/cart')->group(function () {
     Route::post('/change-cart', [ChiTietGioHangController::class, 'changeCart']);
     Route::post('/get-payment-amount', [GioHangController::class, 'getPaymentAmount']);
     Route::post('/create-qr-code-zalo', [GioHangController::class, 'createQRCodeZalo']);
+    Route::post('/remove', [GioHangController::class, 'remove']);
 });
 
 Route::prefix('/faq')->group(function () {
@@ -126,6 +129,11 @@ Route::prefix('/luong')->group(function () {
 
 Route::prefix('/hoa-don')->group(function () {
     Route::post('create', [HoaDonController::class, 'create']);
+    Route::post('add-info', [HoaDonController::class, 'addNguoiNhan']);
+    Route::post('xac-thuc-hoa-don', [HoaDonController::class, 'xacThucHoaDon']);
     Route::post('xac-thuc', [HoaDonController::class, 'xacThuc']);
     Route::get('get/{id}', [HoaDonController::class, 'getHoaDon']);
+    Route::post('list-hoa-don', [HoaDonController::class, 'listHoaDon']);
 });
+
+Route::post('message', [ChatController::class, 'message']);

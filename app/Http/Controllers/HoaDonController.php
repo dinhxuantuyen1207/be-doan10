@@ -83,37 +83,24 @@ class HoaDonController extends Controller
     {
         try {
             if (!isset($request->id)) {
-                return response()->json(["status" => false, "message" => "Yêu Cầu Đăng Nhập"]);
+                return response()->json(["status" => false, "message" => "Login Please"]);
             }
-            if (!isset($request->amount)) {
-                return response()->json(["status" => false, "message" => "Không Có Sản Phẩm Để Thanh Toán"]);
+            if (!$request->filled('data')) {
+                return response()->json(["status" => false, "message" => "None Product Selected"]);
             }
-            if (!isset($request->tax)) {
-                return response()->json(["status" => false, "message" => "Thiếu Thông Tin"]);
-            }
-            if (!isset($request->ship)) {
-                return response()->json(["status" => false, "message" => "Thiếu Thông Tin"]);
-            }
-            if (!isset($request->name) || !isset($request->phone) || !isset($request->address)) {
-                return response()->json(["status" => false, "message" => "Yêu Cầu Nhập Thông Tin Người Nhận"]);
-            }
-
-
             DB::beginTransaction();
 
-            $gioHang = GioHang::where('id_nguoi_dung', $request->id)->first();
-
-            if (!$gioHang) {
-                DB::rollBack();
-                return response()->json(["status" => false, "message" => "Shopping cart not found"]);
-            }
-
-            $chiTietGioHang = ChiTietGioHang::where('id_gio_hang', $gioHang->id)->get();
-
-            if ($chiTietGioHang->isEmpty()) {
-                DB::rollBack();
-                return response()->json(["status" => false, "message" => "Shopping cart items not found"]);
-            }
+            $amount = 0;
+            $tax = 0;
+            $ship = 10;
+            foreach ($request->data as $item) {
+                $sanPham = SanPham::find($item['id_san_pham']);
+                $amount = $amount + ($item['so_luong'] * ($sanPham->gia - $sanPham->gia * ($sanPham->khuyen_mai / 100)));
+            };
+            $tax = $amount * 0.1;
+            $tax = round($tax, 2);
+            $amount = $amount + $tax + $ship;
+            $amount = round($amount, 2);
 
             $today = Carbon::today();
             $date = $today->format('Y-m-d');
@@ -121,40 +108,76 @@ class HoaDonController extends Controller
             $hoaDon = HoaDon::create([
                 'id_nguoi_dung' => $request->id,
                 'ngay_mua' => $date,
-                'gia_tien_thanh_toan' => $request->amount,
-                'id_trang_thai' => 1,
-                'tax' => $request->tax,
-                'ship' => $request->ship,
+                'gia_tien_thanh_toan' => $amount,
+                'id_trang_thai' => 99,
+                'tax' => $tax,
+                'ship' => $ship,
                 'trang_thai_thanh_toan' => 'Chưa Thanh Toán'
             ]);
 
-            if (isset($request->status) && $request->status == true) {
-                $hoaDon->trang_thai_thanh_toan = "Đã Thanh Toán";
-                $hoaDon->ngay_thanh_toan = $date;
-                $hoaDon->save();
-            }
-
-            foreach ($chiTietGioHang as $chiTiet) {
-                $sanPham = SanPham::find($chiTiet->id_san_pham);
-                if ($sanPham) {
+            foreach ($request->data as $item) {
+                if ($item) {
+                    $sanPham = SanPham::find($item['id_san_pham']);
                     $newChiTiet = ChiTietHoaDon::create([
                         'id_hoa_don' => $hoaDon->id,
-                        'id_san_pham' => $chiTiet->id_san_pham,
-                        'gia_tien' => $sanPham->gia,
-                        'so_luong' => $chiTiet->so_luong,
+                        'id_san_pham' => $item['id_san_pham'],
+                        'gia_tien' => $sanPham->gia - $sanPham->gia * $sanPham->khuyen_mai / 100,
+                        'so_luong' => $item['so_luong'],
                     ]);
-
-                    if ($newChiTiet) {
-                        $chiTiet->delete();
-                    }
                 }
             }
-            ThongTinNguoiNhan::create(['id_hoa_don' => $hoaDon->id, 'ten_nguoi_nhan' => $request->name, 'so_dien_thoai' => $request->phone, 'dia_chi' => $request->address]);
-            $gioHang->delete();
 
             DB::commit();
 
-            return response()->json(["status" => true, 'invoiceID' => $hoaDon->id]);
+            return response()->json(["status" => true, 'invoiceID' => $hoaDon->id, 'amount' => $amount]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function addNguoiNhan(Request $request)
+    {
+        try {
+            if (!isset($request->id)) {
+                return response()->json(["status" => false, "message" => "No Find Invoice Number"]);
+            }
+            if (!isset($request->name) || !isset($request->phone) || !isset($request->address)) {
+                return response()->json(["status" => false, "message" => "Input Information Please"]);
+            }
+
+            DB::beginTransaction();
+
+            $info = ThongTinNguoiNhan::create(['id_hoa_don' => $request->id, 'ten_nguoi_nhan' => $request->name, 'so_dien_thoai' => $request->phone, 'dia_chi' => $request->address]);
+
+            DB::commit();
+
+            if (isset($info)) {
+                return response()->json(["status" => true]);
+            } else {
+                return response()->json(["status" => false]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function xacThucHoaDon(Request $request)
+    {
+        try {
+            if (!isset($request->id)) {
+                return response()->json(["status" => false, "message" => "
+Not found Number Invoice"]);
+            }
+            $hoaDon = HoaDon::find($request->id);
+            if (isset($hoaDon)) {
+                $hoaDon->id_trang_thai = 1;
+                $hoaDon->save();
+                return response()->json(['status' => true, 'message' => 'Update Successfully']);
+            } else {
+                return response()->json(['status' => true, 'message' => 'Not found Number Invoice']);
+            }
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
@@ -165,7 +188,7 @@ class HoaDonController extends Controller
     {
         try {
             if (!isset($request->id)) {
-                return response()->json(["status" => false, "message" => "Yêu Cầu Đăng Nhập"]);
+                return response()->json(["status" => false, "message" => "Login Please"]);
             }
 
             DB::beginTransaction();
@@ -177,11 +200,12 @@ class HoaDonController extends Controller
                 $date = $today->format('Y-m-d');
                 $hoaDon->trang_thai_thanh_toan = "Đã Thanh Toán";
                 $hoaDon->ngay_thanh_toan = $date;
+                $hoaDon->id_trang_thai = 1;
                 $hoaDon->save();
 
                 DB::commit();
 
-                return response()->json(['status' => true, 'message' => 'Đã cập nhật trạng thái thanh toán']);
+                return response()->json(['status' => true, 'message' => 'Update Successfully']);
             }
         } catch (Exception $e) {
             DB::rollBack();
@@ -200,5 +224,19 @@ class HoaDonController extends Controller
             return response()->json(['status' => true, 'data' => $hoaDon]);
         }
         return response()->json(['status' => false]);
+    }
+
+    public function listHoaDon(Request $request)
+    {
+        if (!isset($request->id)) {
+            return response()->json(["status" => false, "message" => "Login Please"]);
+        } else {
+            $hoaDon = HoaDon::with(["chiTietHoaDon" => function ($query) {
+                $query->with(["sanPham" => function ($query) {
+                    $query->with(["hinhAnh"])->select('id', 'ten_san_pham');
+                }]);
+            }])->where('id_nguoi_dung', $request->id)->get();
+            return response()->json(['status' => true, 'data' => $hoaDon]);
+        }
     }
 }

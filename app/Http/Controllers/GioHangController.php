@@ -49,7 +49,7 @@ class GioHangController extends Controller
             $data = GioHang::where('id_nguoi_dung', $id)->select('id')->with(['chiTietGioHang' => function ($query) {
                 $query->with(["sanPham" => function ($query) {
                     $query->select('id', 'gia', 'khuyen_mai', 'ten_san_pham')->with(['hinhAnh' => function ($query) {
-                        $query->select('id_san_pham', 'hinh_anh_san_pham')->first();
+                        $query->select('id_san_pham', 'hinh_anh_san_pham');
                     }]);
                 }])->select('id', 'id_gio_hang', 'id_san_pham', 'so_luong');
             }])->first();
@@ -76,6 +76,7 @@ class GioHangController extends Controller
                     }
                 }
                 $tax = $amount * 0.1;
+                $tax = round($tax, 2);
                 $amount = $amount + $tax + $ship;
                 $amount = round($amount, 2);
                 return response()->json(['status' => true, 'amount' => $amount, 'tax' => $tax, 'ship' => $ship]);
@@ -113,5 +114,22 @@ class GioHangController extends Controller
 
         // Trả về QR code và thông tin thanh toán
         return $response->json();
+    }
+
+    public function remove(Request $request)
+    {
+        if (!isset($request->id_item)) {
+            return response()->json(["status" => false, "message" => "Not Found Item"]);
+        }
+        if (!isset($request->id)) {
+            return response()->json(["status" => false, "message" => "Login Please"]);
+        } else {
+            $item = ChiTietGioHang::find($request->id_item);
+            if (isset($item)) {
+                $item->delete();
+                return response()->json(['status' => true,]);
+            }
+        }
+        return response()->json(['status' => false]);
     }
 }

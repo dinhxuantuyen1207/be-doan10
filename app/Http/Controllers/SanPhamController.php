@@ -328,4 +328,13 @@ class SanPhamController extends Controller
             return response()->json(['error' => $e->getMessage()]);
         }
     }
+
+    public function getAll() {
+        $data = SanPham::select('id','ten_san_pham')->get();
+        if (count($data) > 0) {
+            return response()->json(['status' => true, 'data' => $data]);
+        } else {
+            return response()->json(['status' => false]);
+        }
+    }
 }

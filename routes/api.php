@@ -67,6 +67,7 @@ Route::prefix('/product')->group(function () {
     Route::post('/list', [SanPhamController::class, 'list']);
     Route::post('/list-all', [SanPhamController::class, 'listAll']);
     Route::post('/destroy', [SanPhamController::class, 'destroy']);
+    Route::get('/all', [SanPhamController::class, 'getAll']);
     // Route::post('/filter',[SanPhamController::class,'filter']);
     Route::get('/{id}', [SanPhamController::class, 'productDetail']);
     Route::post('/search', [SanPhamController::class, 'search']);
@@ -134,6 +135,7 @@ Route::prefix('/hoa-don')->group(function () {
     Route::post('xac-thuc', [HoaDonController::class, 'xacThuc']);
     Route::get('get/{id}', [HoaDonController::class, 'getHoaDon']);
     Route::post('list-hoa-don', [HoaDonController::class, 'listHoaDon']);
+    Route::post('thong-ke', [HoaDonController::class, 'thongKe']);
 });
 
 Route::post('message', [ChatController::class, 'message']);

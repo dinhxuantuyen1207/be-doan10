@@ -167,8 +167,7 @@ class HoaDonController extends Controller
     {
         try {
             if (!isset($request->id)) {
-                return response()->json(["status" => false, "message" => "
-Not found Number Invoice"]);
+                return response()->json(["status" => false, "message" => "Not found Number Invoice"]);
             }
             $hoaDon = HoaDon::find($request->id);
             if (isset($hoaDon)) {
@@ -237,6 +236,85 @@ Not found Number Invoice"]);
                 }]);
             }])->where('id_nguoi_dung', $request->id)->get();
             return response()->json(['status' => true, 'data' => $hoaDon]);
+        }
+    }
+
+    public function thongKe(Request $request)
+    {
+        try {
+            $main_data = [];
+            $days = [];
+            $tax = 0;
+            $ship = 0;
+            $total = 0;
+            $data = HoaDon::with(["ChiTietHoaDon" => function ($query) use ($request) {
+                $query->with(["sanPham" => function ($query) {
+                    $query->select('id', 'ten_san_pham');
+                }])->select('id', 'id_hoa_don', 'id_san_pham', 'so_luong', 'gia_tien');
+                if ($request->id_product != null) {
+                    $query->where('id_san_pham', $request->id_product);
+                };
+            }])->select('id', 'ngay_mua','tax','ship','gia_tien_thanh_toan')->orderBy('ngay_mua', 'asc')->where('ngay_mua', '<=', $request->day_to)
+                ->where('ngay_mua', '>=', $request->day_from)->get();
+
+            $productCounts = [];
+            foreach ($data as $order) {
+                $tax = $tax + $order['tax'];
+                $ship = $ship + $order['ship'];
+                $total = $total + $order['gia_tien_thanh_toan'];
+                $ngayMua  = $order['ngay_mua'];
+                $chiTietHoaDon = $order['ChiTietHoaDon'];
+                if ($chiTietHoaDon != null) {
+                    foreach ($chiTietHoaDon as $item) {
+                        $sanPham = $item['SanPham'];
+                        $sanPhamName = $sanPham->ten_san_pham;
+                        $soLuong = $item['so_luong'];
+                        $giaTien = $item['so_luong'] * $item['gia_tien'];
+                        if (array_key_exists($ngayMua, $productCounts)) {
+                            if (array_key_exists($sanPhamName, $productCounts[$ngayMua])) {
+                                $productCounts[$ngayMua][$sanPhamName]['soLuong'] += $soLuong;
+                                $productCounts[$ngayMua][$sanPhamName]['giaTien'] += $giaTien;
+                            } else {
+                                $productCounts[$ngayMua][$sanPhamName] = [
+                                    'soLuong' => $soLuong,
+                                    'giaTien' => $giaTien,
+                                ];
+                            }
+                        } else {
+                            $productCounts[$ngayMua] = [
+                                $sanPhamName => [
+                                    'soLuong' => $soLuong,
+                                    'giaTien' => $giaTien,
+                                ],
+                            ];
+                        }
+                    }
+                }
+            }
+
+            foreach ($productCounts as $ngay => $productCount) {
+                if (!in_array($ngay, $days)) {
+                    $days[] = $ngay;
+                }
+                foreach ($productCount as $sanPhamId => ['soLuong' => $soLuong, 'giaTien' => $giaTien]) {
+                    $giaTien = round($giaTien, 2);
+                    $entry = [
+                        'Date' => $ngay,
+                        'Item' => $sanPhamId,
+                        'Count' => $soLuong,
+                        'Price' => $giaTien
+                    ];
+                    $main_data[] = $entry;
+                }
+            }
+            $price = [
+                'tax' => round($tax,2),
+                'ship' => round($ship,2),
+                'total' => round($total,2)
+            ];
+            return response()->json(['status' => true, 'data' => $main_data, 'days' => $days, 'price' => $price]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
         }
     }
 }

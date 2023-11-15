@@ -86,4 +86,20 @@ class NhanVienController extends Controller
         $data = NhanVien::select('id', 'ten_nhan_vien')->get();
         return response()->json(['status' => true, "data" => $data]);
     }
+
+    public function login(Request $request)
+    {
+        $mat_khau = $request->mat_khau;
+        $tai_khoan = $request->tai_khoan;
+        $user = NhanVien::where('tai_khoan', $tai_khoan)->with('chucVu')->first();
+        if ($user) {
+            if (password_verify($mat_khau, $user->mat_khau)) {
+                return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nhan_vien, 'role' => 'admin', 'chucvu' => $user->chucVu->list_quyen_han]);
+            } else {
+                return response()->json(['status' => false]);
+            }
+        } else {
+            return response()->json(['status' => false]);
+        }
+    }
 }

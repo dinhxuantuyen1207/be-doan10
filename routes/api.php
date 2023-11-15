@@ -107,6 +107,7 @@ Route::prefix('/nhan-vien')->group(function () {
     Route::post('list', [NhanVienController::class, 'list']);
     Route::post('create', [NhanVienController::class, 'create']);
     Route::get('list-name', [NhanVienController::class, 'listName']);
+    Route::post('/login', [NhanVienController::class, 'login']);
 });
 
 Route::prefix('/quyen-han')->group(function () {
@@ -135,6 +136,7 @@ Route::prefix('/hoa-don')->group(function () {
     Route::post('xac-thuc', [HoaDonController::class, 'xacThuc']);
     Route::get('get/{id}', [HoaDonController::class, 'getHoaDon']);
     Route::post('list-hoa-don', [HoaDonController::class, 'listHoaDon']);
+    Route::post('list-completed', [HoaDonController::class, 'listHoaDonHoanThanh']);
     Route::post('thong-ke', [HoaDonController::class, 'thongKe']);
 });
 

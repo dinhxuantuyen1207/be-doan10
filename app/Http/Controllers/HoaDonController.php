@@ -51,6 +51,7 @@ class HoaDonController extends Controller
                         });
                 })
                 ->select('id', 'ngay_mua', 'gia_tien_thanh_toan', 'trang_thai_thanh_toan', 'id_nguoi_dung', 'id_trang_thai')
+                ->where('id_trang_thai', '!=', 99)
                 ->paginate($pre_page);
             return response()->json(['status' => true, 'data' => $data_pre]);
         } catch (Exception $e) {
@@ -234,7 +235,7 @@ class HoaDonController extends Controller
                 $query->with(["sanPham" => function ($query) {
                     $query->with(["hinhAnh"])->select('id', 'ten_san_pham');
                 }]);
-            }])->where('id_nguoi_dung', $request->id)->get();
+            }])->where('id_nguoi_dung', $request->id)->where('id_trang_thai', '!=', 99)->orderBy("ngay_mua", "desc")->get();
             return response()->json(['status' => true, 'data' => $hoaDon]);
         }
     }
@@ -254,7 +255,7 @@ class HoaDonController extends Controller
                 if ($request->id_product != null) {
                     $query->where('id_san_pham', $request->id_product);
                 };
-            }])->select('id', 'ngay_mua','tax','ship','gia_tien_thanh_toan')->orderBy('ngay_mua', 'asc')->where('ngay_mua', '<=', $request->day_to)
+            }])->select('id', 'ngay_mua', 'tax', 'ship', 'gia_tien_thanh_toan')->orderBy('ngay_mua', 'asc')->where('ngay_mua', '<=', $request->day_to)
                 ->where('ngay_mua', '>=', $request->day_from)->get();
 
             $productCounts = [];
@@ -308,13 +309,27 @@ class HoaDonController extends Controller
                 }
             }
             $price = [
-                'tax' => round($tax,2),
-                'ship' => round($ship,2),
-                'total' => round($total,2)
+                'tax' => round($tax, 2),
+                'ship' => round($ship, 2),
+                'total' => round($total, 2)
             ];
             return response()->json(['status' => true, 'data' => $main_data, 'days' => $days, 'price' => $price]);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function listHoaDonHoanThanh(Request $request)
+    {
+        if (!isset($request->id)) {
+            return response()->json(["status" => false, "message" => "Login Please"]);
+        } else {
+            $hoaDon = HoaDon::with(["chiTietHoaDon" => function ($query) {
+                $query->with(["sanPham" => function ($query) {
+                    $query->with(["hinhAnh"])->select('id', 'ten_san_pham');
+                }]);
+            }])->where('id_nguoi_dung', $request->id)->where('id_trang_thai', '=', 7)->orderBy("ngay_mua", "desc")->get();
+            return response()->json(['status' => true, 'data' => $hoaDon]);
         }
     }
 }

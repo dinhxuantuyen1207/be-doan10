@@ -8,6 +8,7 @@ use App\Models\GioHang;
 use App\Models\HoaDon;
 use App\Models\SanPham;
 use App\Models\ThongTinNguoiNhan;
+use App\Models\TrangThaiHoaDon;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -30,11 +31,32 @@ class HoaDonController extends Controller
         try {
             $pre_page = 20;
             $search = '';
+            $role = [];
             if (isset($request->pre_page)) {
                 $pre_page = $request->pre_page;
             }
             if (isset($request->search)) {
                 $search = $request->search;
+            }
+            if (isset($request->role)) {
+                if (in_array(13, $request->input('role', []))) {
+                    $role = array_merge($role, [1, 11]);
+                }
+                if (in_array(14, $request->input('role', []))) {
+                    $role = array_merge($role, [2, 3]);
+                }
+                if (in_array(15, $request->input('role', []))) {
+                    $role = array_merge($role, [4, 5]);
+                }
+                if (in_array(16, $request->input('role', []))) {
+                    $role = array_merge($role, [6]);
+                }
+                if (in_array(17, $request->input('role', []))) {
+                    $role = array_merge($role, [8, 9, 10, 11, 12]);
+                }
+                if (in_array(18, $request->input('role', []))) {
+                    $role = array_merge($role, [7]);
+                }
             }
             $data_pre = HoaDon::with(['nguoiDung' => function ($query1) {
                 $query1->select('id', 'tai_khoan');
@@ -52,6 +74,7 @@ class HoaDonController extends Controller
                 })
                 ->select('id', 'ngay_mua', 'gia_tien_thanh_toan', 'trang_thai_thanh_toan', 'id_nguoi_dung', 'id_trang_thai')
                 ->where('id_trang_thai', '!=', 99)
+                ->whereIn('id_trang_thai', $role)
                 ->paginate($pre_page);
             return response()->json(['status' => true, 'data' => $data_pre]);
         } catch (Exception $e) {
@@ -173,6 +196,7 @@ class HoaDonController extends Controller
             $hoaDon = HoaDon::find($request->id);
             if (isset($hoaDon)) {
                 $hoaDon->id_trang_thai = 1;
+                $hoaDon->trang_thai_thanh_toan = $request->thanh_toan;
                 $hoaDon->save();
                 return response()->json(['status' => true, 'message' => 'Update Successfully']);
             } else {
@@ -330,6 +354,77 @@ class HoaDonController extends Controller
                 }]);
             }])->where('id_nguoi_dung', $request->id)->where('id_trang_thai', '=', 7)->orderBy("ngay_mua", "desc")->get();
             return response()->json(['status' => true, 'data' => $hoaDon]);
+        }
+    }
+
+    public function updateStatus(Request $request)
+    {
+        try {
+            if (!isset($request->id)) {
+                return response()->json(["status" => false, "message" => "Invoice Not Found"]);
+            }
+            if (!isset($request->id_trang_thai)) {
+                return response()->json(["status" => false, "message" => "Status Not Found"]);
+            }
+            DB::beginTransaction();
+
+            $data = HoaDon::find($request->id);
+            if ($data) {
+                $data->id_trang_thai = $request->id_trang_thai;
+                $data->save();
+            }
+            $today = Carbon::today();
+            $date = $today->format('Y-m-d');
+            $trang_thai = TrangThaiHoaDon::create([
+                'id_hoa_don' => $data->id,
+                'id_trang_thai' => $request->id_trang_thai,
+                'id_nhan_vien' => $request->id_nhan_vien,
+                'ngay_cap_nhap' => $date,
+                'ghi_chu' => $request->ghi_chu ?? ''
+            ]);
+            DB::commit();
+            return response()->json(["status" => true]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function updatePay(Request $request)
+    {
+        try {
+            if (!isset($request->id)) {
+                return response()->json(["status" => false, "message" => "Invoice Not Found"]);
+            }
+            if (!isset($request->id_trang_thai_thanh_toan)) {
+                return response()->json(["status" => false, "message" => "Status Not Found"]);
+            }
+            if (isset($request->role)) {
+                if (!in_array(19, $request->input('role', []))) {
+                    return response()->json(["status" => false, "message" => "Not Have Access"]);
+                } else {
+                    DB::beginTransaction();
+                    $data = HoaDon::find($request->id);
+                    if ($data) {
+                        $today = Carbon::today();
+                        $date = $today->format('Y-m-d');
+                        if ($request->id_trang_thai_thanh_toan == 1) {
+                            $data->trang_thai_thanh_toan = 'Chưa Thanh Toán';
+                        } else if ($request->id_trang_thai_thanh_toan == 2) {
+                            $data->trang_thai_thanh_toan = 'Chờ Xác Nhận Thanh Toán';
+                        } else if ($request->id_trang_thai_thanh_toan == 3) {
+                            $data->ngay_thanh_toan = $date;
+                            $data->trang_thai_thanh_toan = 'Đã Thanh Toán';
+                        }
+                        $data->save();
+                    }
+                    DB::commit();
+                    return response()->json(["status" => true]);
+                }
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
     }
 }

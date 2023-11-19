@@ -15,6 +15,7 @@ use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhanVienController;
 use App\Http\Controllers\QuyenHanController;
 use App\Http\Controllers\SanPhamController;
+use App\Http\Controllers\TrangThaiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -138,6 +139,12 @@ Route::prefix('/hoa-don')->group(function () {
     Route::post('list-hoa-don', [HoaDonController::class, 'listHoaDon']);
     Route::post('list-completed', [HoaDonController::class, 'listHoaDonHoanThanh']);
     Route::post('thong-ke', [HoaDonController::class, 'thongKe']);
+    Route::post('update-status', [HoaDonController::class, 'updateStatus']);
+    Route::post('update-pay', [HoaDonController::class, 'updatePay']);
+});
+
+Route::prefix('/trang-thai')->group(function () {
+    Route::post('list-r', [TrangThaiController::class, 'listForRole']);
 });
 
 Route::post('message', [ChatController::class, 'message']);

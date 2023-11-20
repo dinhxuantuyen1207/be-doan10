@@ -9,41 +9,36 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Models\ThongBao;
 
-class Message implements ShouldBroadcast
+class NotificationEventAdmin implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
+    public $id_admin;
+    public $notification;
 
-    public function __construct(public string $userId, public string $username, public string $message, public string $toId)
+    public function __construct($id_admin, $notification)
     {
+        $this->id_admin = $id_admin;
+        $this->notification = $notification;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
-     */
     public function broadcastOn()
     {
-        return ['chat'];
+        return new Channel('adminnotifications');
     }
 
     public function broadcastAs()
     {
-        return 'message';
+        return 'adminnotification';
     }
 
     public function broadcastWith()
     {
         return [
-            'userId' => $this->userId,
-            'username' => $this->username,
-            'message' => $this->message,
-            'toId' => $this->toId
+            'id_admin' => $this->id_admin,
+            'notification' => $this->notification,
         ];
     }
 }

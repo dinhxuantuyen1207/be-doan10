@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotificationEvent;
+use App\Events\NotificationEventAdmin;
 use App\Models\ChiTietGioHang;
 use App\Models\ChiTietHoaDon;
 use App\Models\GioHang;
 use App\Models\HoaDon;
 use App\Models\SanPham;
+use App\Models\ThongBao;
+use App\Models\ThongBaoNhanVien;
 use App\Models\ThongTinNguoiNhan;
+use App\Models\TrangThai;
 use App\Models\TrangThaiHoaDon;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use \Illuminate\Support\Facades\Log;
 
 class HoaDonController extends Controller
 {
@@ -198,6 +204,16 @@ class HoaDonController extends Controller
                 $hoaDon->id_trang_thai = 1;
                 $hoaDon->trang_thai_thanh_toan = $request->thanh_toan;
                 $hoaDon->save();
+                $today = Carbon::today();
+                $date = $today->format('Y-m-d');
+                $txt_thong_bao = 'Order ' . $hoaDon->id . ' is waiting for confirmation';
+                $notification = ThongBaoNhanVien::create([
+                    'id_nhan_vien' => 1,
+                    'thong_bao' => $txt_thong_bao,
+                    'ngay_thong_bao' => $date,
+                    'trang_thai_thong_bao' => 0
+                ]);
+                broadcast(new NotificationEventAdmin($notification->id_nhan_vien, $notification));
                 return response()->json(['status' => true, 'message' => 'Update Successfully']);
             } else {
                 return response()->json(['status' => true, 'message' => 'Not found Number Invoice']);
@@ -226,7 +242,14 @@ class HoaDonController extends Controller
                 $hoaDon->ngay_thanh_toan = $date;
                 $hoaDon->id_trang_thai = 1;
                 $hoaDon->save();
-
+                $txt_thong_bao = 'Order ' . $hoaDon->id . ' is waiting for confirmation';
+                $notification = ThongBaoNhanVien::create([
+                    'id_nhan_vien' => 0,
+                    'thong_bao' => $txt_thong_bao,
+                    'ngay_thong_bao' => $date,
+                    'trang_thai_thong_bao' => 0
+                ]);
+                broadcast(new NotificationEventAdmin($notification->id_nhan_vien, $notification));
                 DB::commit();
 
                 return response()->json(['status' => true, 'message' => 'Update Successfully']);
@@ -367,14 +390,22 @@ class HoaDonController extends Controller
                 return response()->json(["status" => false, "message" => "Status Not Found"]);
             }
             DB::beginTransaction();
-
             $data = HoaDon::find($request->id);
-            if ($data) {
-                $data->id_trang_thai = $request->id_trang_thai;
-                $data->save();
-            }
             $today = Carbon::today();
             $date = $today->format('Y-m-d');
+            if ($data) {
+                $data->id_trang_thai = $request->id_trang_thai;
+                $trang_thai = TrangThai::find($request->id_trang_thai);
+                $txt_thong_bao = 'Order ' . $data->id . ' is in status ' . $trang_thai->trang_thai;
+                $notification = ThongBao::create([
+                    'id_nguoi_dung' => $data->id_nguoi_dung,
+                    'thong_bao' => $txt_thong_bao,
+                    'ngay_thong_bao' => $date,
+                    'trang_thai_thong_bao' => 0
+                ]);
+                broadcast(new NotificationEvent($notification->id_nguoi_dung, $notification));
+                $data->save();
+            }
             $trang_thai = TrangThaiHoaDon::create([
                 'id_hoa_don' => $data->id,
                 'id_trang_thai' => $request->id_trang_thai,
@@ -412,6 +443,16 @@ class HoaDonController extends Controller
                             $data->trang_thai_thanh_toan = 'Chưa Thanh Toán';
                         } else if ($request->id_trang_thai_thanh_toan == 2) {
                             $data->trang_thai_thanh_toan = 'Chờ Xác Nhận Thanh Toán';
+                            $today = Carbon::today();
+                            $date = $today->format('Y-m-d');
+                            $txt_thong_bao = 'Order ' . $data->id . ' is waiting for payment confirmation';
+                            $notification = ThongBaoNhanVien::create([
+                                'id_nhan_vien' => 0,
+                                'thong_bao' => $txt_thong_bao,
+                                'ngay_thong_bao' => $date,
+                                'trang_thai_thong_bao' => 0
+                            ]);
+                            broadcast(new NotificationEventAdmin($notification->id_nhan_vien, $notification));
                         } else if ($request->id_trang_thai_thanh_toan == 3) {
                             $data->ngay_thanh_toan = $date;
                             $data->trang_thai_thanh_toan = 'Đã Thanh Toán';

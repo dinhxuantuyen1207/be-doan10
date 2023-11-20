@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThongBao;
+use Exception;
 use Illuminate\Http\Request;
 
 class ThongBaoController extends Controller
@@ -10,9 +11,17 @@ class ThongBaoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function notificationUser(Request $request)
     {
-        //
+        try {
+            if (!isset($request->id)) {
+                return response()->json(["status" => false, "message" => "User Not Found"]);
+            }
+            $thong_bao = ThongBao::where('id_nguoi_dung', $request->id)->orderBy('created_at', 'desc')->get();
+            return response()->json(["status" => true, 'data' => $thong_bao]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

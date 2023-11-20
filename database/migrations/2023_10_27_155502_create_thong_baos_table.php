@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('id_nguoi_dung')->length(20);
             $table->string('thong_bao');
-            $table->date('ngay_thong_ba');
+            $table->date('ngay_thong_bao');
             $table->integer('trang_thai_thong_bao');
             $table->timestamps();
         });

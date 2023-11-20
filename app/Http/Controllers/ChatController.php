@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
-    public function message(Request $request){
-        event(new Message($request->input('userId'),$request->input('username'), $request->input('message'),$request->input('toId')));
+    public function message(Request $request)
+    {
+        broadcast(new Message($request->input('userId'), $request->input('username'), $request->input('message'), $request->input('toId')));
         return [];
     }
 }

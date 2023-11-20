@@ -147,6 +147,7 @@ class NguoiDungController extends Controller
         $user = NguoiDung::where('tai_khoan', $tai_khoan)->first();
         if ($user) {
             if (password_verify($mat_khau, $user->mat_khau)) {
+                session(['id_user' => $user->id]);
                 return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nguoi_dung]);
             } else {
                 return response()->json(['status' => false]);

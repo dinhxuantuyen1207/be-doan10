@@ -15,6 +15,8 @@ use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhanVienController;
 use App\Http\Controllers\QuyenHanController;
 use App\Http\Controllers\SanPhamController;
+use App\Http\Controllers\ThongBaoController;
+use App\Http\Controllers\ThongBaoNhanVienController;
 use App\Http\Controllers\TrangThaiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -145,6 +147,11 @@ Route::prefix('/hoa-don')->group(function () {
 
 Route::prefix('/trang-thai')->group(function () {
     Route::post('list-r', [TrangThaiController::class, 'listForRole']);
+});
+
+Route::prefix('/thong-bao')->group(function () {
+    Route::post('user', [ThongBaoController::class, 'notificationUser']);
+    Route::get('admin', [ThongBaoNhanVienController::class, 'notificationAdmin']);
 });
 
 Route::post('message', [ChatController::class, 'message']);

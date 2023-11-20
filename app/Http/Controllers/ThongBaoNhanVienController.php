@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThongBaoNhanVien;
+use Exception;
 use Illuminate\Http\Request;
 
 class ThongBaoNhanVienController extends Controller
@@ -10,9 +11,14 @@ class ThongBaoNhanVienController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function notificationAdmin()
     {
-        //
+        try {
+            $thong_bao = ThongBaoNhanVien::orderBy('created_at', 'desc')->get();
+            return response()->json(["status" => true, 'data' => $thong_bao]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
     }
 
     /**

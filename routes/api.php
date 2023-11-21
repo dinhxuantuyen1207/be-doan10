@@ -155,3 +155,7 @@ Route::prefix('/thong-bao')->group(function () {
 });
 
 Route::post('message', [ChatController::class, 'message']);
+Route::prefix('/chat')->group(function () {
+    Route::post('user', [ChatController::class, 'chatUser']);
+    Route::get('admin', [ChatController::class, 'chatAdmin']);
+});

@@ -154,7 +154,12 @@ class SanPhamController extends Controller
                     }
                     $saoTong = $saoDanhGia / $soLuot;
                 }
-                return response()->json(['status' => true, 'data' => $sanPham, 'image' => $hinhAnh, 'reviews' => $danhGia, 'starRating' => $saoTong]);
+                $sanPhamPhu = SanPham::where('id_loai_san_pham', $sanPham->id_loai_san_pham)->where('id', '!=', $sanPham->id)->with(['hinhAnh' => function ($query) {
+                    $query->select('id', 'id_san_pham', 'hinh_anh_san_pham');
+                }, 'loaiSanPham' => function ($query) {
+                    $query->select('id', 'ten_loai_san_pham');
+                }])->select('id', 'ten_san_pham', 'gia', 'id_loai_san_pham', 'khuyen_mai')->take(8)->get();
+                return response()->json(['status' => true, 'data' => $sanPham, 'image' => $hinhAnh, 'reviews' => $danhGia, 'starRating' => $saoTong, 'sanPhamPhu' => $sanPhamPhu]);
             } else {
                 return response()->json(['status' => false]);
             }
@@ -329,8 +334,9 @@ class SanPhamController extends Controller
         }
     }
 
-    public function getAll() {
-        $data = SanPham::select('id','ten_san_pham')->get();
+    public function getAll()
+    {
+        $data = SanPham::select('id', 'ten_san_pham')->get();
         if (count($data) > 0) {
             return response()->json(['status' => true, 'data' => $data]);
         } else {

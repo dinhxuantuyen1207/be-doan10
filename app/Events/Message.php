@@ -17,9 +17,13 @@ class Message implements ShouldBroadcast
     /**
      * Create a new event instance.
      */
+    public $id_user;
+    public $chat;
 
-    public function __construct(public string $userId, public string $username, public string $message, public string $toId)
+    public function __construct($id_user, $chat)
     {
+        $this->id_user = $id_user;
+        $this->chat = $chat;
     }
 
     /**
@@ -40,10 +44,8 @@ class Message implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'userId' => $this->userId,
-            'username' => $this->username,
-            'message' => $this->message,
-            'toId' => $this->toId
+            'id_user' => $this->id_user,
+            'chat' => $this->chat,
         ];
     }
 }

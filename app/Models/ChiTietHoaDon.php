@@ -13,11 +13,22 @@ class ChiTietHoaDon extends Model
         'id_hoa_don',
         'id_san_pham',
         'gia_tien',
-        'so_luong'
+        'so_luong',
+        'id_danh_gia'
     ];
 
     public function sanPham()
     {
         return $this->belongsTo(SanPham::class, 'id_san_pham');
+    }
+
+    public function danhGia()
+    {
+        return $this->belongsTo(DanhGiaSanPham::class, 'id_danh_gia');
+    }
+
+    public function hoaDon()
+    {
+        return $this->belongsTo(HoaDon::class, 'id_hoa_don');
     }
 }

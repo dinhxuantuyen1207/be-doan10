@@ -5,6 +5,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChiTietGioHangController;
 use App\Http\Controllers\ChucVuController;
 use App\Http\Controllers\ChuDeFAQController;
+use App\Http\Controllers\DanhGiaSanPhamController;
 use App\Http\Controllers\DongSanPhamController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\GioHangController;
@@ -130,6 +131,8 @@ Route::prefix('/kho')->group(function () {
 
 Route::prefix('/luong')->group(function () {
     Route::post('select', [BangLuongController::class, 'selectLuong']);
+    Route::post('check-cham-cong', [BangLuongController::class, 'checkChamCong']);
+    Route::post('cham-cong', [BangLuongController::class, 'chamCong']);
 });
 
 Route::prefix('/hoa-don')->group(function () {
@@ -158,4 +161,10 @@ Route::post('message', [ChatController::class, 'message']);
 Route::prefix('/chat')->group(function () {
     Route::post('user', [ChatController::class, 'chatUser']);
     Route::get('admin', [ChatController::class, 'chatAdmin']);
+});
+
+Route::prefix('/danh-gia')->group(function () {
+    Route::post('list-review', [DanhGiaSanPhamController::class, 'listReview']);
+    Route::post('wait-review', [DanhGiaSanPhamController::class, 'waitReview']);
+    Route::post('review', [DanhGiaSanPhamController::class, 'review']);
 });

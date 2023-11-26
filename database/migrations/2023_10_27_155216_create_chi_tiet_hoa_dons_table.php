@@ -17,6 +17,7 @@ return new class extends Migration
             $table->bigInteger('id_san_pham')->length(20);
             $table->decimal('gia_tien', 10, 2)->nullable();
             $table->integer('so_luong');
+            $table->bigInteger('id_danh_gia')->length(20);
             $table->timestamps();
         });
     }

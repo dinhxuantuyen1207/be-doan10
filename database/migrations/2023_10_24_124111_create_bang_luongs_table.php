@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('id_nhan_vien')->length(20);
             $table->string('thang_nam', 7);
-            $table->integer('cham_cong')->nullable();
+            $table->longText('cham_cong')->nullable();
             $table->decimal('he_so', 10, 2)->nullable();
             $table->decimal('thuong', 10, 2)->nullable();
             $table->timestamps();

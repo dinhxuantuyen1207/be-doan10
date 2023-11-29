@@ -99,7 +99,7 @@ return [
 
     'from' => [
         'address' => 'dinhxuantuyen97@gmail.com',
-        'name' => 'KH&H Website',
+        'name' => 'KB&H Website',
     ],
 
     /*

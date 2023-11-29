@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendForgotPasswordEmail;
 use App\Models\NguoiDung;
 use Exception;
 use Illuminate\Http\Request;
@@ -174,10 +175,7 @@ class NguoiDungController extends Controller
                 $password .= chr(rand(65, 90));
                 $password = str_shuffle($password);
                 $name = $password;
-                Mail::send('forgotPassword', ['password' => $password, 'user' => $user_name], function ($email) use ($name, $user) {
-                    $email->subject('KB&H Website');
-                    $email->to($user->email, $name);
-                });
+                SendForgotPasswordEmail::dispatch($user)->onQueue('emails');
                 $user['mat_khau'] = bcrypt($password);
                 $user->save();
             }

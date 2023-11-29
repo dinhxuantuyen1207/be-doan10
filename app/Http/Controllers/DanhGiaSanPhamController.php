@@ -16,6 +16,7 @@ class DanhGiaSanPhamController extends Controller
             if (!isset($request->id)) {
                 return response()->json(["status" => false, "message" => "Please Login!"]);
             }
+            $arr_data = [];
             $data = ChiTietHoaDon::with([
                 'danhGia' => function ($query) {
                     $query->orderBy('created_at', 'asc');
@@ -27,7 +28,7 @@ class DanhGiaSanPhamController extends Controller
                 'sanPham' => function ($query) {
                     $query->select('id', 'ten_san_pham')->has('hinhAnh')->with([
                         'hinhAnh' => function ($query) {
-                            $query->select('id', 'id_san_pham', 'hinh_anh_san_pham')->first();
+                            $query->select('id', 'id_san_pham', 'hinh_anh_san_pham');
                         },
                     ]);
                 },
@@ -35,12 +36,12 @@ class DanhGiaSanPhamController extends Controller
                 ->where('id_danh_gia', '!=', null)
                 ->select('id', 'id_san_pham', 'id_hoa_don', 'id_danh_gia')
                 ->get();
-
-
-            $data = $data->filter(function ($chiTiet) {
-                return $chiTiet->hoaDon != null;
+            $data = $data->filter(function ($chiTiet) use (&$arr_data) {
+                if ($chiTiet->hoaDon != null) {
+                    array_push($arr_data, $chiTiet);
+                }
             });
-            return response()->json(['status' => true, 'data' => $data]);
+            return response()->json(['status' => true, 'data' => $arr_data]);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
@@ -52,18 +53,17 @@ class DanhGiaSanPhamController extends Controller
             if (!isset($request->id)) {
                 return response()->json(["status" => false, "message" => "Please Login!"]);
             }
+            $arr_data = [];
             $data = ChiTietHoaDon::with([
-                'danhGia' => function ($query) {
-                    $query->orderBy('created_at', 'asc');
-                },
+                'danhGia',
                 'hoaDon' => function ($query) use ($request) {
                     $query->where('id_nguoi_dung', $request->id)
-                        ->select('id', 'id_nguoi_dung', 'trang_thai_thanh_toan', 'id_trang_thai');
+                        ->select('id', 'id_nguoi_dung', 'trang_thai_thanh_toan', 'id_trang_thai')->where('trang_thai_thanh_toan', 'Đã Thanh Toán')->where('id_trang_thai', 7);
                 },
                 'sanPham' => function ($query) {
                     $query->select('id', 'ten_san_pham')->has('hinhAnh')->with([
                         'hinhAnh' => function ($query) {
-                            $query->select('id', 'id_san_pham', 'hinh_anh_san_pham')->first();
+                            $query->select('id', 'id_san_pham', 'hinh_anh_san_pham');
                         },
                     ]);
                 },
@@ -71,12 +71,12 @@ class DanhGiaSanPhamController extends Controller
                 ->where('id_danh_gia', '=', null)
                 ->select('id', 'id_san_pham', 'id_hoa_don', 'id_danh_gia')
                 ->get();
-
-
-            $data = $data->filter(function ($chiTiet) {
-                return $chiTiet->hoaDon != null;
+            $data = $data->filter(function ($chiTiet) use (&$arr_data) {
+                if ($chiTiet->hoaDon != null) {
+                    array_push($arr_data, $chiTiet);
+                }
             });
-            return response()->json(['status' => true, 'data' => $data]);
+            return response()->json(['status' => true, 'data' => $arr_data]);
         } catch (Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }

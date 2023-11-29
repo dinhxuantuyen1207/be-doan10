@@ -46,6 +46,8 @@ Route::prefix('/user')->group(function () {
     Route::post('/create', [NguoiDungController::class, 'create']);
     Route::post('/login', [NguoiDungController::class, 'login']);
     Route::get('/name', [NguoiDungController::class, 'name']);
+    Route::post('/forgot-password', [NguoiDungController::class, 'forgotPassword']);
+    Route::post('/get-email', [NguoiDungController::class, 'getEmail']);
 });
 
 Route::prefix('/product-types')->group(function () {

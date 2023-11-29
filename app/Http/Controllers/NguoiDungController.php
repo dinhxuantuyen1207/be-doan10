@@ -6,6 +6,8 @@ use App\Models\NguoiDung;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class NguoiDungController extends Controller
 {
@@ -154,6 +156,50 @@ class NguoiDungController extends Controller
             }
         } else {
             return response()->json(['status' => false]);
+        }
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        try {
+            if (!isset($request->id)) {
+                return response()->json(['status' => false]);
+            }
+            $user_name = '';
+            $user = NguoiDung::find($request->id);
+            if (isset($user)) {
+                $user_name = $user->ten_nguoi_dung;
+                $password = Str::random(9);
+                $password .= rand(0, 9);
+                $password .= chr(rand(65, 90));
+                $password = str_shuffle($password);
+                $name = $password;
+                Mail::send('forgotPassword', ['password' => $password, 'user' => $user_name], function ($email) use ($name, $user) {
+                    $email->subject('KB&H Website');
+                    $email->to($user->email, $name);
+                });
+                $user['mat_khau'] = bcrypt($password);
+                $user->save();
+            }
+            return response()->json(['status' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function getEmail(Request $request)
+    {
+        try {
+            if (!isset($request->username)) {
+                return response()->json(['status' => false]);
+            }
+            $data = NguoiDung::where('tai_khoan', $request->username)->select('id', 'email', 'so_dien_thoai')->first();
+            if ($data) {
+                return response()->json(['status' => true, 'data' => $data]);
+            }
+            return response()->json(['status' => false]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }
     }
 }

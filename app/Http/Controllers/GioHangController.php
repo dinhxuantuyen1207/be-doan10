@@ -51,7 +51,7 @@ class GioHangController extends Controller
                     $query->select('id', 'gia', 'khuyen_mai', 'ten_san_pham')->with(['hinhAnh' => function ($query) {
                         $query->select('id_san_pham', 'hinh_anh_san_pham');
                     }]);
-                }])->select('id', 'id_gio_hang', 'id_san_pham', 'so_luong');
+                }])->select('id', 'id_gio_hang', 'id_san_pham', 'so_luong','created_at')->orderBy('created_at','desc');
             }])->first();
             return response()->json(['status' => true, 'data' => $data]);
         } catch (Exception $e) {

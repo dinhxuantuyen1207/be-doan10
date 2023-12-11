@@ -8,6 +8,7 @@ use App\Models\ChiTietGioHang;
 use App\Models\ChiTietHoaDon;
 use App\Models\GioHang;
 use App\Models\HoaDon;
+use App\Models\QLKho;
 use App\Models\SanPham;
 use App\Models\ThongBao;
 use App\Models\ThongBaoNhanVien;
@@ -196,6 +197,9 @@ class HoaDonController extends Controller
     public function xacThucHoaDon(Request $request)
     {
         try {
+            if (!isset($request->id_user)) {
+                return response()->json(["status" => false, "message" => "Please Login!"]);
+            }
             if (!isset($request->id)) {
                 return response()->json(["status" => false, "message" => "Not found Number Invoice"]);
             }
@@ -228,6 +232,10 @@ class HoaDonController extends Controller
                         broadcast(new NotificationEventAdmin($notification->id_nhan_vien, $notification));
                     }
                 }
+                $gioHang = GioHang::where('id_nguoi_dung', $request->id_user)->first();
+                if (isset($gioHang)) {
+                    ChiTietGioHang::where('id_gio_hang', $gioHang->id)->delete();
+                }
                 return response()->json(['status' => true, 'message' => 'Update Successfully']);
             } else {
                 return response()->json(['status' => true, 'message' => 'Not found Number Invoice']);
@@ -241,6 +249,9 @@ class HoaDonController extends Controller
     public function xacThuc(Request $request)
     {
         try {
+            if (!isset($request->id_user)) {
+                return response()->json(["status" => false, "message" => "Please Login!"]);
+            }
             if (!isset($request->id)) {
                 return response()->json(["status" => false, "message" => "Login Please"]);
             }
@@ -264,6 +275,10 @@ class HoaDonController extends Controller
                     'trang_thai_thong_bao' => 0
                 ]);
                 broadcast(new NotificationEventAdmin($notification->id_nhan_vien, $notification));
+                $gioHang = GioHang::where('id_nguoi_dung', $request->id_user)->first();
+                if (isset($gioHang)) {
+                    ChiTietGioHang::where('id_gio_hang', $gioHang->id)->delete();
+                }
                 DB::commit();
 
                 return response()->json(['status' => true, 'message' => 'Update Successfully']);
@@ -427,6 +442,16 @@ class HoaDonController extends Controller
                 'ngay_cap_nhap' => $date,
                 'ghi_chu' => $request->ghi_chu ?? ''
             ]);
+            if ($request->id_trang_thai == 2) {
+                $chiTiet = ChiTietHoaDon::where('id_hoa_don', $data->id)->get();
+                foreach ($chiTiet as $ct) {
+                    $kho = QLKho::where('id_san_pham', $ct->id)->first();
+                    if (isset($kho)) {
+                        $kho->so_luong_da_ban = $kho->so_luong_da_ban * 1 + $ct->so_luong * 1;
+                        $kho->save();
+                    }
+                }
+            }
             DB::commit();
             return response()->json(["status" => true]);
         } catch (Exception $e) {

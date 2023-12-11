@@ -14,6 +14,7 @@ use App\Http\Controllers\KhoController;
 use App\Http\Controllers\LoaiSanPhamController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhanVienController;
+use App\Http\Controllers\QLKhoController;
 use App\Http\Controllers\QuyenHanController;
 use App\Http\Controllers\SanPhamController;
 use App\Http\Controllers\ThongBaoController;
@@ -129,6 +130,8 @@ Route::prefix('/chuc-vu')->group(function () {
 
 Route::prefix('/kho')->group(function () {
     Route::post('product', [KhoController::class, 'detailKho']);
+    Route::post('create', [KhoController::class, 'nhapKho']);
+    Route::post('kho',[QLKhoController::class, 'kho']);
 });
 
 Route::prefix('/luong')->group(function () {

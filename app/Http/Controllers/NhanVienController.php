@@ -95,7 +95,7 @@ class NhanVienController extends Controller
         if ($user) {
             if (password_verify($mat_khau, $user->mat_khau)) {
                 session(['id_admin' => $user->id]);
-                return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nhan_vien, 'role' => 'admin', 'chucvu' => $user->chucVu->list_quyen_han]);
+                return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nhan_vien, 'avatar' => $user->anh_nhan_vien, 'role' => 'admin', 'chucvu' => $user->chucVu->list_quyen_han]);
             } else {
                 return response()->json(['status' => false]);
             }

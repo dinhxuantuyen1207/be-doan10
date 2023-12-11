@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DanhGiaSanPham;
 use App\Models\HinhAnhSanPham;
 use App\Models\LoaiSanPham;
+use App\Models\QLKho;
 use App\Models\SanPham;
 use Exception;
 use Illuminate\Http\Request;
@@ -39,7 +40,10 @@ class SanPhamController extends Controller
                         ]);
                     }
                 }
-
+                $kho = QLKho::where('id_san_pham', $sanPham->id)->first();
+                if (!isset($kho)) {
+                    $khoC = QLKho::create(['id_san_pham' => $sanPham->id, 'so_luong_nhap' => 0, 'so_luong_da_ban' => 0]);
+                }
                 return response()->json(['status' => true]);
             }, 5);
         } catch (Exception $e) {

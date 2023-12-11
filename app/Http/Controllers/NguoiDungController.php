@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendForgotPasswordEmail;
 use App\Models\NguoiDung;
+use Illuminate\Support\Facades\Validator;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Vonage\Client;
+use Vonage\SMS\Message\SMS;
+use Vonage\Client\Credentials\Basic;
 
 class NguoiDungController extends Controller
 {
@@ -128,11 +132,25 @@ class NguoiDungController extends Controller
     public function create(Request $request)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'tai_khoan' => ['required', 'regex:/^[a-z0-9]{3,16}$/'],
+                'mat_khau' => ['required', 'regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/'],
+                'ten_nguoi_dung' => 'required',
+                'email' => ['required', 'regex:/^[^\s@]+@[^\s@]+\.[^\s@]+$/'],
+                'dia_chi' => 'required',
+                'so_dien_thoai' => ['required', 'regex:/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im'],
+            ]);
+            if ($validator->fails()) {
+                return response()->json(['status' => false, 'message' => 'Sign Up Error !']);
+            }
             $check_name = NguoiDung::where('tai_khoan', $request->tai_khoan)->first();
             if (isset($check_name)) {
-                return response()->json(['status' => false, 'message' => 'Người Dùng Đã Tồn Tại']);
+                return response()->json(['status' => false, 'message' => 'User already exists']);
             }
-            $check_phone = NguoiDung::where('so_dien_thoai', $request->so_dien_thoai)->first();
+            $check_mail = NguoiDung::where('email', $request->email)->first();
+            if (isset($check_mail)) {
+                return response()->json(['status' => false, 'message' => 'Email already exists']);
+            }
             $data = $request->all();
             $data['mat_khau'] = bcrypt($data['mat_khau']);
             NguoiDung::create($data);
@@ -151,7 +169,7 @@ class NguoiDungController extends Controller
         if ($user) {
             if (password_verify($mat_khau, $user->mat_khau)) {
                 session(['id_user' => $user->id]);
-                return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nguoi_dung]);
+                return response()->json(['status' => true, 'id' => $user->id, 'name' => $user->ten_nguoi_dung, 'avatar' => $user->anh_dai_dien]);
             } else {
                 return response()->json(['status' => false]);
             }
@@ -176,6 +194,17 @@ class NguoiDungController extends Controller
                 $password = str_shuffle($password);
                 $name = $password;
                 SendForgotPasswordEmail::dispatch($user)->onQueue('emails');
+                $basic  = new \Vonage\Client\Credentials\Basic("b132e30f", "CZiuMrF99fLeIfw2");
+                $client = new \Vonage\Client($basic);
+                $response = $client->sms()->send(
+                    new \Vonage\SMS\Message\SMS("0898433473", "BRAND_NAME", 'A text message sent using the Nexmo SMS API')
+                );
+                $message = $response->current();
+                if ($message->getStatus() == 0) {
+                    echo "The message was sent successfully\n";
+                } else {
+                    echo "The message failed with status: " . $message->getStatus() . "\n";
+                }
                 $user['mat_khau'] = bcrypt($password);
                 $user->save();
             }

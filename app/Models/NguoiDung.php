@@ -16,6 +16,7 @@ class NguoiDung extends Model
         'dia_chi',
         'so_dien_thoai',
         'email',
-        'anh_dai_dien'
+        'anh_dai_dien',
+        'code'
     ];
 }

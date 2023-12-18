@@ -188,11 +188,6 @@ class NguoiDungController extends Controller
             $user = NguoiDung::find($request->id);
             if (isset($user)) {
                 $user_name = $user->ten_nguoi_dung;
-                $password = Str::random(9);
-                $password .= rand(0, 9);
-                $password .= chr(rand(65, 90));
-                $password = str_shuffle($password);
-                $name = $password;
                 SendForgotPasswordEmail::dispatch($user)->onQueue('emails');
                 $basic  = new \Vonage\Client\Credentials\Basic("b132e30f", "CZiuMrF99fLeIfw2");
                 $client = new \Vonage\Client($basic);
@@ -205,10 +200,70 @@ class NguoiDungController extends Controller
                 } else {
                     echo "The message failed with status: " . $message->getStatus() . "\n";
                 }
-                $user['mat_khau'] = bcrypt($password);
-                $user->save();
             }
             return response()->json(['status' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function checkCode(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'code' => ['required', 'regex:/^.{6}$/'],
+            ]);
+            if (!isset($request->id)) {
+                return response()->json(['status' => false]);
+            }
+            if (!isset($request->code)) {
+                return response()->json(['status' => false]);
+            }
+            if ($validator->fails()) {
+                return response()->json(['status' => false, 'message' => 'Sign Up Error !']);
+            }
+            $user = NguoiDung::find($request->id);
+            if (isset($user)) {
+                if ($user->code == $request->code) {
+                    return response()->json(['status' => true]);
+                }
+            }
+            return response()->json(['status' => false]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function changePass(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'code' => ['required', 'regex:/^.{6}$/'],
+                'password' => ['required', 'regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/'],
+            ]);
+
+            if (!isset($request->password)) {
+                return response()->json(['status' => false]);
+            }
+            if (!isset($request->id)) {
+                return response()->json(['status' => false]);
+            }
+            if (!isset($request->code)) {
+                return response()->json(['status' => false]);
+            }
+            if ($validator->fails()) {
+                return response()->json(['status' => false, 'message' => 'Info Error !']);
+            }
+            $user = NguoiDung::find($request->id);
+            if (isset($user)) {
+                if ($user->code == $request->code) {
+                    $user['mat_khau'] = bcrypt($request['password']);
+                    $user['code'] = null;
+                    $user->save();
+                    return response()->json(['status' => true]);
+                }
+            }
+            return response()->json(['status' => false]);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
         }

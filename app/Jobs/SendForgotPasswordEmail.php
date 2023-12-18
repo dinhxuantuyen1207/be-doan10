@@ -24,14 +24,11 @@ class SendForgotPasswordEmail implements ShouldQueue
 
     public function handle()
     {
-        $password = Str::random(9) . rand(0, 9) . chr(rand(65, 90));
-        $password = str_shuffle($password);
-
+        $code = Str::random(4) . rand(0, 9) . chr(rand(65, 90));
+        $code = str_shuffle($code);
         Mail::to($this->user->email)
-            ->send(new ForgotPassword($password, $this->user->ten_nguoi_dung));
-
-        // Update password in the database
-        $this->user->mat_khau = bcrypt($password);
+            ->send(new ForgotPassword($code, $this->user->ten_nguoi_dung));
+        $this->user->code = $code;
         $this->user->save();
     }
 }

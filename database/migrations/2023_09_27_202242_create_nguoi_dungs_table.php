@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('so_dien_thoai');
             $table->string('email');
             $table->string('anh_dai_dien')->nullable();
+            $table->string('code', 10)->nullable();
             $table->timestamps();
         });
     }

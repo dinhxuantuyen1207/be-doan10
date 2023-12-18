@@ -11,18 +11,18 @@ class ForgotPassword extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $password;
+    public $code;
     public $userName;
 
-    public function __construct($password, $userName)
+    public function __construct($code, $userName)
     {
-        $this->password = $password;
+        $this->code = $code;
         $this->userName = $userName;
     }
 
     public function build()
     {
-        return $this->view('forgotPassword', ['password' => $this->password, 'user' => $this->userName])
+        return $this->view('forgotPassword', ['password' => $this->code, 'user' => $this->userName])
             ->subject('KB&H Website');
     }
 }

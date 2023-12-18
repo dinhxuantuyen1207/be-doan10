@@ -14,7 +14,7 @@
 
 <body class="antialiased">
     <div>Xin Chào {{ $user }}! Đây là tin nhắn đến từ website : HK&B </div>
-    <div style="text-align: center">Đây là mã password mới của bạn<div>
+    <div style="text-align: center">Đây là mã thay đổi password mới của bạn<div>
             <div>
                 <div
                     style="width: 400px;
@@ -25,10 +25,10 @@
             margin: auto;
             padding: auto;
             font-size: 50px;">
-                    <p style="margin: auto;">{{ $password }}</p>
+                    <p style="margin: auto;">{{ $code }}</p>
                 </div>
             </div>
-            <div style="text-align: center">Hãy đổi lại password mà bạn muốn sau khi đăng nhập</div>
+            <div style="text-align: center">Hãy đổi lại password mà bạn muốn</div>
 </body>
 
 </html>

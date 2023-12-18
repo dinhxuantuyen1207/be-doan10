@@ -12,6 +12,7 @@ use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\KhoController;
 use App\Http\Controllers\LoaiSanPhamController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhanVienController;
 use App\Http\Controllers\QLKhoController;
@@ -49,6 +50,8 @@ Route::prefix('/user')->group(function () {
     Route::get('/name', [NguoiDungController::class, 'name']);
     Route::post('/forgot-password', [NguoiDungController::class, 'forgotPassword']);
     Route::post('/get-email', [NguoiDungController::class, 'getEmail']);
+    Route::post('/check-code', [NguoiDungController::class, 'checkCode']);
+    Route::post('/change-pass', [NguoiDungController::class, 'changePass']);
 });
 
 Route::prefix('/product-types')->group(function () {
@@ -115,6 +118,9 @@ Route::prefix('/nhan-vien')->group(function () {
     Route::post('create', [NhanVienController::class, 'create']);
     Route::get('list-name', [NhanVienController::class, 'listName']);
     Route::post('/login', [NhanVienController::class, 'login']);
+    Route::get('edit/{id}', [NhanVienController::class, 'edit']);
+    Route::post('update', [NhanVienController::class, 'update']);
+    Route::post('destroy', [NhanVienController::class, 'destroy']);
 });
 
 Route::prefix('/quyen-han')->group(function () {
@@ -172,4 +178,13 @@ Route::prefix('/danh-gia')->group(function () {
     Route::post('list-review', [DanhGiaSanPhamController::class, 'listReview']);
     Route::post('wait-review', [DanhGiaSanPhamController::class, 'waitReview']);
     Route::post('review', [DanhGiaSanPhamController::class, 'review']);
+});
+
+Route::prefix('/tin-tuc')->group(function () {
+    Route::post('create', [NewsController::class, 'create']);
+    Route::get('list', [NewsController::class, 'list']);
+    Route::get('edit/{id}', [NewsController::class, 'edit']);
+    Route::get('view/{id}', [NewsController::class, 'view']);
+    Route::post('update', [NewsController::class, 'update']);
+    Route::post('destroy', [NewsController::class, 'destroy']);
 });

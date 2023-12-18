@@ -103,4 +103,106 @@ class NhanVienController extends Controller
             return response()->json(['status' => false]);
         }
     }
+
+    public function edit($id)
+    {
+        try {
+            if (!isset($id)) {
+                return response()->json(['status' => false, 'message' => 'Info Error !']);
+            }
+            $data = NhanVien::find($id)->with('chucVu');
+            if ($data) {
+                return response()->json(['status' => true, 'data' => $data]);
+            } else {
+                return response()->json(['status' => false, 'message' => 'Not Found !']);
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function update(Request $request)
+    {
+        try {
+            $filename = '';
+            $data = NhanVien::find($request->id);
+            if (isset($data)) {
+                if (isset($request->name) && $data->ten_nhan_vien != $request->name) {
+                    $data->ten_nhan_vien = $request->name;
+                }
+                if (isset($request->password) && $data->mat_khau != $request->password) {
+                    $data->mat_khau = bcrypt($request->password);
+                }
+                if (isset($request->phone) && $data->so_dien_thoai != $request->phone) {
+                    $data->so_dien_thoai = $request->phone;
+                }
+                if (isset($request->salary) && $data->luong_co_ban != $request->salary) {
+                    $data->luong_co_ban = $request->salary;
+                }
+                if (isset($request->id_position) && $data->id_chuc_vu != $request->id_position) {
+                    $data->id_chuc_vu = $request->id_position;
+                }
+                if ($request->hasFile('avatar')) {
+                    $files = $request->file('avatar');
+                    if ($request->hasFile('avatar')) {
+                        $filename = 'upload/' . $data->anh_nhan_vien;
+                        $name = time() . rand(1, 100) . "." . $files->getClientOriginalExtension();
+                        $data->anh_nhan_vien = $name;
+                        $files->move('upload', $name);
+                    }
+                }
+                $img_CCCD = [];
+                if(isset($request->img_CCCD)){
+                    $files2 = $request->img_CCCD;
+                    if (isset($files2)) {
+                        foreach ($files2 as $file) {
+                            $name = time() . rand(1, 100) . "." . $file->getClientOriginalExtension();
+                            $file->move('upload', $name);
+                            $img_CCCD[] = $name;
+                        }
+                        if (isset($request->pre_img_CCCD)) {
+                            foreach ($request->pre_img_CCCD as $img) {
+                                $img_CCCD[] = $img;
+                            }
+                        }
+                    }
+                } else {
+                    if (isset($request->pre_img_CCCD)) {
+                        foreach ($request->pre_img_CCCD as $img) {
+                            $img_CCCD[] = $img;
+                        }
+                    }
+                }
+                $data->anh_cccd = $img_CCCD;
+                $data->save();
+                if ($request->hasFile('image')) {
+                    if (file_exists(public_path($filename))) {
+                        unlink(public_path($filename));
+                    }
+                }
+                return response()->json(['status' => true]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function destroy(Request $request)
+    {
+        try {
+            if (isset($request->id)) {
+                $nhanvien = NhanVien::find($request->id);
+                if (isset($nhanvien)) {
+                    $nhanvien->delete();
+                    return response()->json(['status' => true]);
+                }
+                return response()->json(['status' => false, 'message' => 'Not Found !']);
+            }
+            return response()->json(['status' => false, 'message' => 'Not Found !']);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
 }

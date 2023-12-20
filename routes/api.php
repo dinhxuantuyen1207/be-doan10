@@ -157,6 +157,7 @@ Route::prefix('/hoa-don')->group(function () {
     Route::post('thong-ke', [HoaDonController::class, 'thongKe']);
     Route::post('update-status', [HoaDonController::class, 'updateStatus']);
     Route::post('update-pay', [HoaDonController::class, 'updatePay']);
+    Route::post('best-sell', [HoaDonController::class, 'bestSell']);
 });
 
 Route::prefix('/trang-thai')->group(function () {

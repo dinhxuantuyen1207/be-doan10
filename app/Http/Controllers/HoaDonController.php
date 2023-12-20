@@ -16,6 +16,7 @@ use App\Models\ThongTinNguoiNhan;
 use App\Models\TrangThai;
 use App\Models\TrangThaiHoaDon;
 use Carbon\Carbon;
+use DateTime;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -445,7 +446,7 @@ class HoaDonController extends Controller
             if ($request->id_trang_thai == 2) {
                 $chiTiet = ChiTietHoaDon::where('id_hoa_don', $data->id)->get();
                 foreach ($chiTiet as $ct) {
-                    $kho = QLKho::where('id_san_pham', $ct->id)->first();
+                    $kho = QLKho::where('id_san_pham', $ct->id_san_pham)->first();
                     if (isset($kho)) {
                         $kho->so_luong_da_ban = $kho->so_luong_da_ban * 1 + $ct->so_luong * 1;
                         $kho->save();
@@ -507,6 +508,65 @@ class HoaDonController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function bestSell(Request $request)
+    {
+        try {
+            $currentDateTime = new DateTime();
+            $month = $currentDateTime->format('Y-m');
+            $main_data = [];
+            if (isset($request->month)) {
+                $month = $request->month;
+            }
+            $data = HoaDon::with(["ChiTietHoaDon" => function ($query) use ($request) {
+                $query->with(["sanPham" => function ($query) {
+                    $query->select('id', 'ten_san_pham');
+                }])->select('id', 'id_hoa_don', 'id_san_pham', 'so_luong', 'gia_tien');
+                if ($request->id_product != null) {
+                    $query->where('id_san_pham', $request->id_product);
+                };
+            }])->select('id', 'ngay_mua')->whereRaw("DATE_FORMAT(ngay_mua, '%Y-%m') = ?", [$month])->where('id_trang_thai', 7)->get();
+
+            $productCounts = [];
+            foreach ($data as $order) {
+                $chiTietHoaDon = $order['ChiTietHoaDon'];
+                if ($chiTietHoaDon != null) {
+                    foreach ($chiTietHoaDon as $item) {
+                        $sanPham = $item['SanPham'];
+                        if ($sanPham != null) {
+                            $sanPhamName = $sanPham->ten_san_pham;
+                            $soLuong = $item['so_luong'];
+
+                            if ($sanPhamName != null) {
+                                if (array_key_exists($sanPhamName, $productCounts)) {
+                                    $productCounts[$sanPhamName]['soLuong'] += $soLuong;
+                                } else {
+                                    $productCounts[$sanPhamName] = [
+                                        'soLuong' => $soLuong,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach ($productCounts as $sanPhamId => ['soLuong' => $soLuong]) {
+                $entry = [
+                    'Item' => $sanPhamId,
+                    'Count' => $soLuong,
+                ];
+                $main_data[] = $entry;
+            }
+            usort($main_data, function ($a, $b) {
+                return $b['Count'] - $a['Count'];
+            });
+            $top5 = array_slice($main_data, 0, 5);
+            return response()->json(['status' => true, 'data' => $top5]);
+        } catch (Exception $e) {
+            return response()->json(['status' => false, 'message' => $e->getMessage()]);
         }
     }
 }

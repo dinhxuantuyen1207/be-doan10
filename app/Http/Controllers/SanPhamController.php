@@ -251,7 +251,7 @@ class SanPhamController extends Controller
             $listIdLoaiSanPham = [];
             $giaTien = [];
             $price = '';
-            if (isset($request->id_category)) {
+            if (isset($request->id_category) && $request->id_category != 0) {
                 $loaiSanPham = LoaiSanPham::where('id_dong_san_pham', $request->id_category)->select('id')->get();
                 foreach ($loaiSanPham as $item) {
                     $listIdLoaiSanPham[] = $item->id;
@@ -265,7 +265,7 @@ class SanPhamController extends Controller
             }
             $data_pre = SanPham::with('loaiSanPham', 'hinhAnh');
 
-            if (isset($request->id_category)) {
+            if (isset($request->id_category) && $request->id_category != 0) {
                 $data_pre->whereIn('id_loai_san_pham', $listIdLoaiSanPham);
             }
             if (!empty($giaTien[0])) {
